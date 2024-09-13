@@ -1,7 +1,16 @@
 {
-    "filepath": "./bin/dgpr646.txt",
+    "filePath": "./data/dgpr646.txt",
+    "waitTime": {
+        "max": 4.0,
+        "min": 2.0
+    },
     "pressure": {
+        "label": "PRESSURE",
         "max": 8.0,
         "min": 5.0
+    },
+    "jobLog": {
+        "labelStart": "JOBSTART",
+        "labelEnd": "JOBEND"
     }
 }

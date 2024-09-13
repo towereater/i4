@@ -7,11 +7,20 @@ import (
 )
 
 type Config struct {
-	FilePath string `json:"filepath"`
-	Pressure struct {
+	FilePath string `json:"filePath"`
+	WaitTime struct {
 		Max float32 `json:"max"`
 		Min float32 `json:"min"`
+	} `json:"waitTime"`
+	Pressure struct {
+		Label string  `json:"label"`
+		Max   float32 `json:"max"`
+		Min   float32 `json:"min"`
 	} `json:"pressure"`
+	Job struct {
+		Start string `json:"labelStart"`
+		End   string `json:"labelEnd"`
+	} `json:"jobLog"`
 }
 
 var AppConfig Config

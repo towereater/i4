@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-// Output labels
-const LABEL_PRESSURE = "PRESSURE"
-const LABEL_JOB_START = "JOBSTART"
-const LABEL_JOB_END = "JOBEND"
-
 // Job status
 var jobStart bool
 var jobId int32
@@ -25,21 +20,18 @@ func main() {
 	}
 
 	//Setup machine with locals
-	jobStart = true
+	jobStart = false
 
 	//Create loop
 	for {
-		r := rand.Intn(2)
-
-		switch r {
-		case 0:
+		if jobStart && rand.Intn(2) == 0 {
 			//Randomly generate pressure data
 			err = generatePressure()
 			if err != nil {
 				fmt.Println("Error while generating pressure data:", err)
 				os.Exit(4)
 			}
-		case 1:
+		} else {
 			//Randomly generate job start data if a job is not active
 			//Randomly generate job end data if a job is active
 			err = generateJob()
@@ -52,8 +44,9 @@ func main() {
 		//Randomly generate pressure and job errors
 
 		//Wait some time
-		r = rand.Intn(2) + 1
-		time.Sleep(time.Duration(r) * time.Second)
+		r := rand.Float32()
+		waitTime := r*(AppConfig.WaitTime.Max-AppConfig.WaitTime.Min) + AppConfig.WaitTime.Min
+		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 }
 
@@ -71,7 +64,7 @@ func generatePressure() error {
 	defer f.Close()
 
 	//Write output file
-	output := fmt.Sprintf("%s, %s, %v\n", datetime, LABEL_PRESSURE, pres)
+	output := fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.Pressure.Label, pres)
 	fmt.Print(output)
 	_, err = f.WriteString(output)
 	if err != nil {
@@ -83,10 +76,13 @@ func generatePressure() error {
 
 func generateJob() error {
 	//Generate random data
-	if jobStart {
+	if !jobStart {
 		jobId = rand.Int31()
 	}
 	datetime := time.DateTime
+
+	//Job status update
+	jobStart = !jobStart
 
 	//Open output file
 	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -98,18 +94,15 @@ func generateJob() error {
 	//Write output file
 	var output string
 	if jobStart {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, LABEL_JOB_START, jobId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.Job.Start, jobId)
 	} else {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, LABEL_JOB_END, jobId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.Job.End, jobId)
 	}
 	fmt.Print(output)
 	_, err = f.WriteString(output)
 	if err != nil {
 		return err
 	}
-
-	//Job status update
-	jobStart = !jobStart
 
 	return nil
 }
