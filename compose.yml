@@ -1,0 +1,19 @@
+name: i4-showcase
+
+services:
+  machine-pressure:
+    build: ./DGPR646
+    ports:
+      - "12001:12001"
+    networks:
+      - mach-tier
+  
+  machine-water:
+    build: ./DGWL854
+    ports:
+      - "12002:12002"
+    networks:
+      - mach-tier
+
+networks:
+  mach-tier: {}
