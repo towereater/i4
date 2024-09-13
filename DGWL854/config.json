@@ -1,0 +1,20 @@
+{
+    "filePath": "./data/dgwl854.txt",
+    "waitTime": {
+        "max": 4.0,
+        "min": 2.0
+    },
+    "waterLevel": {
+        "label": "WATER",
+        "max": 400.0,
+        "min": 150.0
+    },
+    "jobLog": {
+        "labelStart": "JOBSTART",
+        "labelEnd": "JOBEND"
+    },
+    "userLog": {
+        "labelStart": "LOGIN",
+        "labelEnd": "LOGOFF"
+    }
+}
