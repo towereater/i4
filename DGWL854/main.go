@@ -69,7 +69,7 @@ func generateWaterLevel() error {
 	//Generate random data
 	r := rand.Float32()
 	water := r*(AppConfig.WaterLevel.Max-AppConfig.WaterLevel.Min) + AppConfig.WaterLevel.Min
-	datetime := time.DateTime
+	datetime := time.Now().Format(time.DateTime)
 
 	//Open output file
 	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -94,7 +94,7 @@ func generateJob() error {
 	if !jobStart {
 		jobId = rand.Int31()
 	}
-	datetime := time.DateTime
+	datetime := time.Now().Format(time.DateTime)
 
 	//Job status update
 	jobStart = !jobStart
@@ -127,7 +127,7 @@ func generateUserLog() error {
 	if !userLogged {
 		userId = rand.Int31()
 	}
-	datetime := time.DateTime
+	datetime := time.Now().Format(time.DateTime)
 
 	//User status update
 	userLogged = !userLogged

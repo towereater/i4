@@ -54,7 +54,7 @@ func generatePressure() error {
 	//Generate random data
 	r := rand.Float32()
 	pres := r*(AppConfig.Pressure.Max-AppConfig.Pressure.Min) + AppConfig.Pressure.Min
-	datetime := time.DateTime
+	datetime := time.Now().Format(time.DateTime)
 
 	//Open output file
 	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -79,7 +79,7 @@ func generateJob() error {
 	if !jobStart {
 		jobId = rand.Int31()
 	}
-	datetime := time.DateTime
+	datetime := time.Now().Format(time.DateTime)
 
 	//Job status update
 	jobStart = !jobStart
