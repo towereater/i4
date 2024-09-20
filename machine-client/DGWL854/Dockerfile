@@ -8,6 +8,6 @@ WORKDIR /app
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /main
 
-EXPOSE 12002
+#EXPOSE 12002
 
 CMD ["/main"]
