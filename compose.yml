@@ -1,20 +1,22 @@
-name: i4-showcase
+name: i4
 
 services:
   machine-pressure:
     build: ./machine-client/DGPR646
+    privileged: true
     networks:
       - mach-tier
   
   machine-water:
     build: ./machine-client/DGWL854
+    privileged: true
     networks:
       - mach-tier
   
-  machine-aggregator:
-    build: ./machine-client/aggregator
-    networks:
-      - mach-tier
+  #machine-aggregator:
+  #  build: ./machine-client/aggregator
+  #  networks:
+  #    - mach-tier
 
 networks:
   mach-tier: {}
