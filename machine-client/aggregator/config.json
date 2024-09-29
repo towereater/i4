@@ -1,0 +1,11 @@
+{
+    "filePath": "./data/*.json",
+    "waitTime": {
+        "max": 15.0,
+        "min": 10.0
+    },
+    "targets": [
+        "machine-pressure",
+        "machine-water"
+    ]
+}
