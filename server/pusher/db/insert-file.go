@@ -12,7 +12,7 @@ func InsertFile(ctx context.Context, user any) error {
 	}
 
 	// Insert of a document
-	_, err = coll.InsertOne(context.TODO(), user)
+	_, err = coll.InsertOne(ctx, user)
 
 	return err
 }
