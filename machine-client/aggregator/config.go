@@ -7,12 +7,18 @@ import (
 )
 
 type Config struct {
-	FilePath string `json:"filePath"`
+	FileDir  string `json:"fileDir"`
 	WaitTime struct {
 		Max float32 `json:"max"`
 		Min float32 `json:"min"`
 	} `json:"waitTime"`
-	Targets []string `json:"targets"`
+	Targets []struct {
+		Name   string `json:"name"`
+		User   string `json:"user"`
+		Pass   string `json:"pass"`
+		Folder string `json:"folder"`
+		File   string `json:"file"`
+	} `json:"targets"`
 }
 
 var AppConfig Config

@@ -1,11 +1,23 @@
 {
-    "filePath": "./data/*.json",
+    "fileDir": "./data/",
     "waitTime": {
         "max": 15.0,
         "min": 10.0
     },
     "targets": [
-        "machine-pressure",
-        "machine-water"
+        {
+            "name": "machine-pressure",
+            "user": "ssh-user",
+            "pass": "passwd",
+            "folder": "/app/data",
+            "file": "dgpr646*.txt"
+        },
+        {
+            "name": "machine-water",
+            "user": "ssh-user",
+            "pass": "passwd",
+            "folder": "/app/data",
+            "file": "dgwl854*.txt"
+        }
     ]
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aggregator/dgpr646"
 	"math/rand"
 	"os"
 	"time"
@@ -14,19 +15,27 @@ func main() {
 		os.Exit(3)
 	}
 
+	//Elaboration caches
+	var dgpr646Cache *dgpr646.Dgpr646Cache = nil
+
 	//Create loop
 	for {
-		//Check already locally saved files
+		dgpr646.Discover(AppConfig.FileDir, AppConfig.Targets[0].File, dgpr646Cache)
 
 		//Choose a remote target and do rename + FTP + delete remote file
-
-		//Events translated immediately
-
-		//Start-stop saved locally
+		/*
+			foreach config target ssh-connect to it using name, user, pass
+			check folder for files
+			ftp all files and remove them from remote
+			load local start-stop
+			elaborate them
+		*/
 
 		//File sent to remote DB
-
-		//Setup machine with locals
+		/*
+			request data save to server
+			sent data to server
+		*/
 
 		//Wait some time
 		r := rand.Float32()
