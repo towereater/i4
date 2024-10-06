@@ -1,0 +1,18 @@
+package db
+
+import (
+	"context"
+)
+
+func InsertMetadata(ctx context.Context, user any) error {
+	// Retrieve the collection
+	coll, err := getCollection(ctx, "i4", "files-content")
+	if err != nil {
+		return err
+	}
+
+	// Insert of a document
+	_, err = coll.InsertOne(context.TODO(), user)
+
+	return err
+}
