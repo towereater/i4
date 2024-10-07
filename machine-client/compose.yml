@@ -1,0 +1,22 @@
+name: i4-machine-client
+
+services:
+  machine-pressure:
+    build: ./DGPR646
+    privileged: true
+    networks:
+      - mach-tier
+  
+  machine-water:
+    build: ./DGWL854
+    privileged: true
+    networks:
+      - mach-tier
+  
+  #aggregator:
+  #  build: ./aggregator
+  #  networks:
+  #    - mach-tier
+
+networks:
+  mach-tier: {}

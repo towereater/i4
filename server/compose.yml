@@ -1,0 +1,37 @@
+name: i4-server
+
+services:
+  pusher:
+    build: ./pusher
+    ports:
+      - "12001:12001"
+    networks:
+      - back-tier
+  
+  kafka:
+    image: apache/kafka:3.8.0
+    environment:
+      - KAFKA_CREATE_TOPICS: "docupl:1:1"
+    #  - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: false
+    ports:
+      - "9092:9092"
+    networks:
+      - back-tier
+
+  mongo:
+    image: mongo:7.0.2
+    environment:
+      - MONGO_INITDB_USERNAME: "admin"
+      - MONGO_INITDB_PASSWORD: "admin"
+      - MONGO_INITDB_DATABASE: "i4"
+    ports:
+      - "27017:27017"
+    volumes:
+      - /Users/andnic/Documents/mongo-data-i4:/etc/mongo-data
+      - ./mongo/init.js::/docker-entrypoint-initdb.d/init-mongo-db-with-collections.js:ro
+    networks:
+      - back-tier
+    command: ["mongod", "--dbpath", "/etc/mongo-data"]
+
+networks:
+  back-tier: {}
