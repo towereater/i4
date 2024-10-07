@@ -21,7 +21,7 @@ func main() {
 	// Creation of the mux
 	mux := http.NewServeMux()
 
-	// Setup machine routes
+	// Setup server routes
 	fmt.Println("Setting up routes")
 	SetupRoutes(cfg, mux)
 
