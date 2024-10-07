@@ -12,10 +12,25 @@ type Config struct {
 		Port string `json:"port"`
 	} `json:"server"`
 	DB struct {
+		Host        string `json:"host"`
+		Port        string `json:"port"`
+		Timeout     int    `json:"timeout"`
+		DBName      string `json:"dbname"`
+		Collections struct {
+			Metadata struct {
+				Name string `json:"name"`
+			} `json:"metadata"`
+			Content struct {
+				Name string `json:"name"`
+			} `json:"content"`
+		} `json:"collections"`
+	} `json:"db"`
+	Queue struct {
 		Host    string `json:"host"`
 		Port    string `json:"port"`
 		Timeout int    `json:"timeout"`
-	} `json:"db"`
+		Topic   int    `json:"topic"`
+	} `json:"queue"`
 }
 
 func ReadConfig(path string) (Config, error) {

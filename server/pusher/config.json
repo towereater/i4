@@ -6,6 +6,21 @@
     "db": {
         "host": "mongo",
         "port": "27017",
-        "timeout": 5
+        "timeout": 5,
+        "dbname": "i4",
+        "collections": {
+            "metadata": {
+                "name": "metadata"
+            },
+            "content": {
+                "name": "content"
+            }
+        }
+    },
+    "queue": {
+        "host": "kafka",
+        "port": "9092",
+        "timeout": 5,
+        "topic": "docupl"
     }
 }
