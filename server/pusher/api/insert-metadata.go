@@ -1,7 +1,10 @@
 package api
 
 import (
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
+	"hash/fnv"
 	"net/http"
 	"pusher/db"
 	"pusher/model"
@@ -16,16 +19,26 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: COMPUTE HASH, IT SHOULD NOT COME FROM CLIENT
+	// Computing file hash
+	h := make([]byte, 4)
+	binary.LittleEndian.PutUint32(h, req.FileHash)
+
+	hash := fnv.New32()
+	hash.Write([]byte("pass"))
+	hash.Write([]byte(req.Client))
+	hash.Write([]byte(req.Machine))
+	hash.Write([]byte(req.Timestamp))
+	hash.Write(h)
+	hash.Write([]byte("word"))
 
 	// Generation of the new document
 	metadata := model.FileMetadata{
+		Hash:      hash.Sum32(),
 		Client:    req.Client,
 		Machine:   req.Machine,
 		Timestamp: req.Timestamp,
 		Size:      req.Size,
 		Extension: req.Extension,
-		Hash:      "", //req.Hash
 	}
 
 	// Execution of the request
@@ -35,8 +48,17 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Creation of the output object
+	urls := model.InsertMetadataOutputUrls{
+		UploadContent: fmt.Sprintf("%s/%d", r.Host, metadata.Hash),
+	}
+	output := model.InsertMetadataOutput{
+		Id:   metadata.Hash,
+		Urls: urls,
+	}
+
 	// Response output
-	//TODO: SEND BACK HASH AND/OR API URL
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(output)
 }

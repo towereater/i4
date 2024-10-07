@@ -6,5 +6,5 @@ type FileMetadata struct {
 	Timestamp string `json:"timestamp" bson:"ts"`
 	Size      int64  `json:"size" bson:"size"`
 	Extension string `json:"extension" bson:"ext"`
-	Hash      string `json:"hash" bson:"hash"`
+	Hash      uint32 `json:"hash" bson:"hash"`
 }

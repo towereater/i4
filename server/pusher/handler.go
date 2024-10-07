@@ -24,7 +24,8 @@ func SetupRoutes(cfg config.Config, s *http.ServeMux) {
 	s.HandleFunc("/data-files", addConfigMiddleware(cfg, filesHandler))
 
 	// Handles data files API functions
-	s.HandleFunc("/data-files/{fileId}", addConfigMiddleware(cfg, filesByIdHandler))
+	s.HandleFunc(fmt.Sprintf("/data-files/{%v}", config.ContextHash),
+		addConfigMiddleware(cfg, filesByIdHandler))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
