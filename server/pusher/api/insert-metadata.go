@@ -19,7 +19,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Computing file hash
+	// Computing file id
 	h := make([]byte, 4)
 	binary.LittleEndian.PutUint32(h, req.FileHash)
 
@@ -31,7 +31,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	hash.Write(h)
 	hash.Write([]byte("word"))
 
-	// Generation of the new document
+	// Generation of the metadata document
 	metadata := model.FileMetadata{
 		Hash:      hash.Sum32(),
 		Client:    req.Client,
