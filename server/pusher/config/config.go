@@ -29,7 +29,7 @@ type Config struct {
 		Host    string `json:"host"`
 		Port    string `json:"port"`
 		Timeout int    `json:"timeout"`
-		Topic   int    `json:"topic"`
+		Topic   string `json:"topic"`
 	} `json:"queue"`
 }
 

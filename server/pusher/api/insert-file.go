@@ -20,7 +20,6 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: GET FILE CONTENT
 	// Get the file content
 	r.ParseMultipartForm(32 << 20)
 	var buf bytes.Buffer
