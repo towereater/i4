@@ -2,6 +2,8 @@ package api
 
 import (
 	"bytes"
+	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +11,9 @@ import (
 	"pusher/db"
 	"pusher/model"
 	"strconv"
+	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func InsertFile(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +61,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Queue server-side file elaboration
-	err = queueFile()
+	err = queueFile(r.Context(), hash32)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -67,7 +72,33 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-// TODO: ADD FILE HASH TO QUEUE
-func queueFile() error {
-	return nil
+func queueFile(ctx context.Context, hash uint32) error {
+	// Extracting config
+	cfg := ctx.Value(config.ContextConfig).(config.Config)
+
+	// Creating topic writer with timeout
+	w := &kafka.Writer{
+		Addr:  kafka.TCP(fmt.Sprintf("%s:%s", cfg.Queue.Host, cfg.Queue.Port)),
+		Topic: cfg.Queue.Topic,
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
+	defer cancel()
+
+	// Preparing data for queue
+	datetime := time.Now().Format(time.DateTime)
+	h := make([]byte, 4)
+	binary.LittleEndian.PutUint32(h, hash)
+
+	// Writing hash on queue
+	err := w.WriteMessages(ctx,
+		kafka.Message{
+			Key:   []byte(datetime),
+			Value: h,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return w.Close()
 }

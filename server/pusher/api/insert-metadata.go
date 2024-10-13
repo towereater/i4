@@ -50,7 +50,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// Creation of the output object
 	urls := model.InsertMetadataOutputUrls{
-		UploadContent: fmt.Sprintf("%s/%d", r.Host, metadata.Hash),
+		UploadContent: fmt.Sprintf("%s/data-files/%d", r.Host, metadata.Hash),
 	}
 	output := model.InsertMetadataOutput{
 		Id:   metadata.Hash,
