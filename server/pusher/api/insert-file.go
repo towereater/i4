@@ -7,18 +7,18 @@ import (
 	"net/http"
 	"pusher/config"
 	"pusher/db"
+	"pusher/model"
+	"strconv"
 )
 
 func InsertFile(w http.ResponseWriter, r *http.Request) {
-	// Extraction of the context config
-	//cfg := r.Context().Value(config.ContextConfig).(config.Config)
-
 	// Extraction of extra parameters
-	hash := r.PathValue(string(config.ContextHash))
-	if hash == "" {
-		http.Error(w, "Invalid key", http.StatusForbidden)
+	hash, err := strconv.ParseUint(r.PathValue(string(config.ContextHash)), 10, 32)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	hash32 := uint32(hash)
 
 	// Get the file content
 	r.ParseMultipartForm(32 << 20)
@@ -34,15 +34,22 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(size)
 
 	io.Copy(&buf, f)
-	content := buf.String()
-	fmt.Println(content)
+	cccc := buf.Bytes()
+	data := string(cccc)
+	fmt.Println(data)
 
-	buf.Reset()
+	//buf.Reset()
 
 	// TODO: CHECK HASH AND METADATA
 
+	// Creation of the file content object
+	content := model.FileContent{
+		Hash:    hash32,
+		Content: cccc,
+	}
+
 	// Execution of the request
-	err = db.InsertFile(r.Context(), "")
+	err = db.InsertFile(r.Context(), content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

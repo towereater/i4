@@ -3,9 +3,10 @@ package db
 import (
 	"context"
 	"pusher/config"
+	"pusher/model"
 )
 
-func InsertFile(ctx context.Context, user any) error {
+func InsertFile(ctx context.Context, content model.FileContent) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -16,7 +17,7 @@ func InsertFile(ctx context.Context, user any) error {
 	}
 
 	// Insert of a document
-	_, err = coll.InsertOne(ctx, user)
+	_, err = coll.InsertOne(ctx, content)
 
 	return err
 }
