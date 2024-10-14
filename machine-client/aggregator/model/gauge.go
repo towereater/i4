@@ -7,6 +7,13 @@ type StringGauge struct {
 	Params    []string `json:"params"`
 }
 
+type IntGauge struct {
+	Timestamp string   `json:"timestamp"`
+	Key       string   `json:"key"`
+	Value     int32    `json:"value"`
+	Params    []string `json:"params"`
+}
+
 type FloatGauge struct {
 	Timestamp string   `json:"timestamp"`
 	Key       string   `json:"key"`

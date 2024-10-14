@@ -33,10 +33,10 @@ func Discover(dir string, pattern string, cache *Dgpr646Cache) {
 		defer inputFile.Close()
 
 		//Open output file connection
-		outputPath := inputPath[0:strings.LastIndex(inputPath, ".")] + ".json"
+		outputPath := path.Join(dir, "elab-"+v[0:strings.LastIndex(v, ".")]+".txt")
 		outputFile, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
-			fmt.Printf("Error while opening output file %s: %v\n", outputPath, err)
+			fmt.Printf("Error while opening or creating output file %s: %v\n", outputPath, err)
 			continue
 		}
 		defer outputFile.Close()
@@ -48,6 +48,7 @@ func Discover(dir string, pattern string, cache *Dgpr646Cache) {
 		if err != nil {
 			timestamp := time.Now().Format(time.DateTime)
 			os.Rename(inputPath, path.Join(dir, fmt.Sprintf("ERROR %v %v", timestamp, inputPath)))
+			os.Remove(outputPath)
 		}
 	}
 }
@@ -56,6 +57,7 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Dgpr646Cache) err
 	//Read file line by line and split each one
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
+		fmt.Println(scanner.Text())
 		data := strings.Split(scanner.Text(), ", ")
 
 		if data[1] == "PRESSURE" {
@@ -155,7 +157,7 @@ func generateJobInterval(f *os.File, jobStart model.StringGauge, jobEnd model.St
 }
 
 func printData(f *os.File, jsonByte []byte) error {
-	_, err := f.WriteString(fmt.Sprintf("%v,\n", string(jsonByte)))
+	_, err := f.WriteString(fmt.Sprintf("%v\n", string(jsonByte)))
 
 	return err
 }

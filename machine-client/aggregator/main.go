@@ -9,18 +9,19 @@ import (
 
 func main() {
 	//Setup machine with config
-	err := ReadConfig("./config.json")
+	cfg, err := ReadConfig("./config.json")
 	if err != nil {
 		println("Error while reading config file:", err)
 		os.Exit(3)
 	}
 
 	//Elaboration caches
-	var dgpr646Cache *dgpr646.Dgpr646Cache = nil
+	var dgpr646Cache *dgpr646.Dgpr646Cache = &dgpr646.Dgpr646Cache{}
 
 	//Create loop
 	for {
-		dgpr646.Discover(AppConfig.FileDir, AppConfig.Targets[0].File, dgpr646Cache)
+		dgpr646.Discover(cfg.FileDir, cfg.Targets[0].File, dgpr646Cache)
+		//dgpr646.Fetch()
 
 		//Choose a remote target and do rename + FTP + delete remote file
 		/*
@@ -39,11 +40,11 @@ func main() {
 
 		//Wait some time
 		r := rand.Float32()
-		waitTime := r*(AppConfig.WaitTime.Max-AppConfig.WaitTime.Min) + AppConfig.WaitTime.Min
+		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
 		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 }
 
-func connectSsh() {
+// func connectSsh() {
 
-}
+// }
