@@ -1,6 +1,7 @@
 package config
 
 import (
+	"aggregator/model"
 	"encoding/json"
 	"io"
 	"os"
@@ -8,18 +9,13 @@ import (
 
 type Config struct {
 	FileDir  string `json:"fileDir"`
+	Client   string `json:"client"`
 	WaitTime struct {
 		Max float32 `json:"max"`
 		Min float32 `json:"min"`
 	} `json:"waitTime"`
-	Targets []struct {
-		Name   string `json:"name"`
-		User   string `json:"user"`
-		Pass   string `json:"pass"`
-		Folder string `json:"folder"`
-		File   string `json:"file"`
-	} `json:"targets"`
-	Server struct {
+	Targets []model.Target `json:"targets"`
+	Server  struct {
 		Host           string `json:"host"`
 		UploadMetadata string `json:"uploadMetadata"`
 	} `json:"server"`

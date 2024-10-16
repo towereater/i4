@@ -13,13 +13,16 @@ import (
 	"time"
 )
 
-func SendFile(cfg config.Config, path string) {
+func SendFile(cfg config.Config, path string, machine string) {
+	// Gathering of the data
+	timestamp := time.Now().Format(time.DateTime)
+
 	// Construction of the request
 	url := "http://" + cfg.Server.Host + cfg.Server.UploadMetadata
 	metadataInput := model.InsertMetadataInput{
-		Client:    "",
-		Machine:   "",
-		Timestamp: "",
+		Client:    cfg.Client,
+		Machine:   machine,
+		Timestamp: timestamp,
 		Size:      2,
 		Extension: "txt",
 		FileHash:  2,

@@ -22,7 +22,7 @@ func main() {
 	//Create loop
 	for {
 		//dgpr646.Fetch()
-		dgpr646.Discover(cfg, cfg.FileDir, cfg.Targets[0].File, dgpr646Cache)
+		dgpr646.Discover(cfg, cfg.Targets[0], dgpr646Cache)
 
 		//Choose a remote target and do rename + FTP + delete remote file
 		/*

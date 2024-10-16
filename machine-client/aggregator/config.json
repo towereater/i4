@@ -1,5 +1,6 @@
 {
     "fileDir": "./data/",
+    "client": "COBALM",
     "waitTime": {
         "max": 15.0,
         "min": 10.0
@@ -7,6 +8,7 @@
     "targets": [
         {
             "name": "machine-pressure",
+            "machine": "DGPR646",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",
@@ -14,6 +16,7 @@
         },
         {
             "name": "machine-water",
+            "machine": "DGPW854",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",

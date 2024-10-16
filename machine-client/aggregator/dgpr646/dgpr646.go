@@ -15,18 +15,18 @@ import (
 	"time"
 )
 
-func Discover(cfg config.Config, dir string, pattern string, cache *Cache) {
+func Discover(cfg config.Config, target model.Target, cache *Cache) {
 	//Searches for all files with the given pattern
-	files, err := fs.Glob(os.DirFS(dir), pattern)
+	files, err := fs.Glob(os.DirFS(cfg.FileDir), target.File)
 	if err != nil {
-		fmt.Printf("Error while searching %s files: %v", pattern, err)
+		fmt.Printf("Error while searching %s files: %v", target.File, err)
 		return
 	}
 
 	//Elaborates all files which were found
 	for _, f := range files {
 		//Open input file connection
-		inputPath := path.Join(dir, f)
+		inputPath := path.Join(cfg.FileDir, f)
 		inputFile, err := os.Open(inputPath)
 		if err != nil {
 			fmt.Printf("Error while opening input file %s: %v\n", f, err)
@@ -35,7 +35,7 @@ func Discover(cfg config.Config, dir string, pattern string, cache *Cache) {
 		defer inputFile.Close()
 
 		//Open output file connection
-		outputPath := path.Join(dir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
+		outputPath := path.Join(cfg.FileDir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
 		outputFile, err := os.OpenFile(outputPath, os.O_CREATE, 0600)
 		if err != nil {
 			fmt.Printf("Error while opening or creating output file %s: %v\n", f, err)
@@ -49,10 +49,10 @@ func Discover(cfg config.Config, dir string, pattern string, cache *Cache) {
 		//If an error occurred, the file is renamed to block next elaborations
 		if err != nil {
 			timestamp := time.Now().Format(time.DateTime)
-			os.Rename(inputPath, path.Join(dir, fmt.Sprintf("ERROR %v %v", timestamp, f)))
+			os.Rename(inputPath, path.Join(cfg.FileDir, fmt.Sprintf("ERROR %v %v", timestamp, f)))
 			os.Remove(outputPath)
 		} else {
-			utils.SendFile(cfg, outputFile.Name())
+			utils.SendFile(cfg, outputPath, target.Machine)
 		}
 	}
 }
