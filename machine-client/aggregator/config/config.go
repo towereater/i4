@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -19,6 +19,10 @@ type Config struct {
 		Folder string `json:"folder"`
 		File   string `json:"file"`
 	} `json:"targets"`
+	Server struct {
+		Host           string `json:"host"`
+		UploadMetadata string `json:"uploadMetadata"`
+	} `json:"server"`
 }
 
 func ReadConfig(path string) (Config, error) {

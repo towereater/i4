@@ -2,6 +2,6 @@ package dgpr646
 
 import "aggregator/model"
 
-type Dgpr646Cache struct {
+type Cache struct {
 	Job *model.StringGauge
 }

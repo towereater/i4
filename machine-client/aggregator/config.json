@@ -19,5 +19,9 @@
             "folder": "/app/data",
             "file": "dgwl854*.txt"
         }
-    ]
+    ],
+    "server": {
+        "host": "pusher:12001",
+        "uploadMetadata": "/data-files"
+    }
 }

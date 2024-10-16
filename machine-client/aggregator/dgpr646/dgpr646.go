@@ -1,7 +1,9 @@
 package dgpr646
 
 import (
+	"aggregator/config"
 	"aggregator/model"
+	"aggregator/utils"
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -13,7 +15,7 @@ import (
 	"time"
 )
 
-func Discover(dir string, pattern string, cache *Dgpr646Cache) {
+func Discover(cfg config.Config, dir string, pattern string, cache *Cache) {
 	//Searches for all files with the given pattern
 	files, err := fs.Glob(os.DirFS(dir), pattern)
 	if err != nil {
@@ -22,21 +24,21 @@ func Discover(dir string, pattern string, cache *Dgpr646Cache) {
 	}
 
 	//Elaborates all files which were found
-	for _, v := range files {
+	for _, f := range files {
 		//Open input file connection
-		inputPath := path.Join(dir, v)
+		inputPath := path.Join(dir, f)
 		inputFile, err := os.Open(inputPath)
 		if err != nil {
-			fmt.Printf("Error while opening input file %s: %v\n", inputPath, err)
+			fmt.Printf("Error while opening input file %s: %v\n", f, err)
 			continue
 		}
 		defer inputFile.Close()
 
 		//Open output file connection
-		outputPath := path.Join(dir, "elab-"+v[0:strings.LastIndex(v, ".")]+".txt")
-		outputFile, err := os.OpenFile(outputPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		outputPath := path.Join(dir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
+		outputFile, err := os.OpenFile(outputPath, os.O_CREATE, 0600)
 		if err != nil {
-			fmt.Printf("Error while opening or creating output file %s: %v\n", outputPath, err)
+			fmt.Printf("Error while opening or creating output file %s: %v\n", f, err)
 			continue
 		}
 		defer outputFile.Close()
@@ -47,13 +49,15 @@ func Discover(dir string, pattern string, cache *Dgpr646Cache) {
 		//If an error occurred, the file is renamed to block next elaborations
 		if err != nil {
 			timestamp := time.Now().Format(time.DateTime)
-			os.Rename(inputPath, path.Join(dir, fmt.Sprintf("ERROR %v %v", timestamp, inputPath)))
+			os.Rename(inputPath, path.Join(dir, fmt.Sprintf("ERROR %v %v", timestamp, f)))
 			os.Remove(outputPath)
+		} else {
+			utils.SendFile(cfg, outputFile.Name())
 		}
 	}
 }
 
-func elaborate(inputFile *os.File, outputFile *os.File, cache *Dgpr646Cache) error {
+func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 	//Read file line by line and split each one
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
