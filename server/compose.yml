@@ -5,9 +5,9 @@ services:
     build: ./pusher
     depends_on:
       kafka:
-        condition: service_started
+        condition: service_healthy
       mongo:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "12001:12001"
     networks:
@@ -15,23 +15,31 @@ services:
   
   kafka:
     image: apache/kafka:3.8.0
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_NUM_PARTITIONS: 1
-      KAFKA_CREATE_TOPICS: "docupl:1:1"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    env_file: ./kafka/config.env
+    healthcheck:
+      test: kafka-topics.sh --bootstrap-server kafka:9092 --topic docupl --describe
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "9092:9092"
+    expose:
+      - "9092"
+    networks:
+      - back-tier
+  
+  init-kafka:
+    image: apache/kafka:3.8.0
+    depends_on:
+      - kafka
+    env_file: ./kafka-init/config.env
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic docupl --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
     networks:
       - back-tier
 
@@ -40,6 +48,11 @@ services:
     environment:
       MONGO_INITDB_USERNAME: "admin"
       MONGO_INITDB_PASSWORD: "admin"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
       - "27017:27017"
     volumes:
