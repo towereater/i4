@@ -5,6 +5,7 @@ import (
 	"aggregator/model"
 	"bytes"
 	"encoding/json"
+	"hash/fnv"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -14,8 +15,30 @@ import (
 )
 
 func SendFile(cfg config.Config, path string, machine string) {
+	// Opening file connection
+	f, err := os.Open(path)
+	if err != nil {
+		println("Error while opening file:", err)
+		return
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		println("Error while getting file size:", err)
+		return
+	}
+
 	// Gathering of the data
 	timestamp := time.Now().Format(time.DateTime)
+	size := fi.Size()
+
+	hash := fnv.New32()
+	_, err = io.Copy(hash, f)
+	if err != nil {
+		println("Error while computing file hash:", err)
+		return
+	}
 
 	// Construction of the request
 	url := "http://" + cfg.Server.Host + cfg.Server.UploadMetadata
@@ -23,9 +46,9 @@ func SendFile(cfg config.Config, path string, machine string) {
 		Client:    cfg.Client,
 		Machine:   machine,
 		Timestamp: timestamp,
-		Size:      2,
+		Size:      size,
 		Extension: "txt",
-		FileHash:  2,
+		FileHash:  hash.Sum32(),
 	}
 
 	// Execution of the request
@@ -45,23 +68,27 @@ func SendFile(cfg config.Config, path string, machine string) {
 	}
 	res.Body.Close()
 
-	// Opening file connection
-	f, err := os.Open(path)
-	if err != nil {
-		println("Error while opening file:", err)
-		return
-	}
-	defer f.Close()
+	// Copying file content to request field
+	f.Seek(0, 0)
 
 	buf := &bytes.Buffer{}
 	writer := multipart.NewWriter(buf)
+	defer writer.Close()
+
 	part, err := writer.CreateFormFile("file", filepath.Base(path))
 	if err != nil {
 		println("Error while opening file:", err)
 		return
 	}
+
 	_, err = io.Copy(part, f)
-	err = writer.Close()
+	if err != nil {
+		println("Error while copying file:", err)
+		return
+	}
+
+	writer.Close()
+	f.Close()
 
 	// Construction of the request
 	url = "http://" + metadataOutput.Urls.UploadContent
@@ -82,10 +109,6 @@ func SendFile(cfg config.Config, path string, machine string) {
 		return
 	}
 }
-
-// func connectSsh() {
-
-// }
 
 func executeHttpRequest(method string, url string, payload any) (*http.Response, error) {
 	// Convertion of the payload
@@ -109,3 +132,7 @@ func executeHttpRequest(method string, url string, payload any) (*http.Response,
 	// Execution of the request
 	return client.Do(req)
 }
+
+// func connectSsh() {
+
+// }
