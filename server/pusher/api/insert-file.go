@@ -21,23 +21,37 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	hash, err := strconv.ParseUint(r.PathValue(string(config.ContextHash)), 10, 32)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
 	hash32 := uint32(hash)
+	fmt.Printf("File hash is: %v\n", hash32)
+
+	fmt.Printf("Content-Type headers: %v\n", r.Header.Values("Content-Type"))
+	fmt.Printf("Content-Type first header: %v\n", r.Header.Values("Content-Type")[0])
 
 	// Get the file content
 	r.ParseMultipartForm(32 << 20)
-	var buf bytes.Buffer
+	fmt.Printf("Content length: %v\n", r.ContentLength)
+	if r.MultipartForm == nil {
+		fmt.Printf("1Multipart form is still nil\n")
+	}
 	f, header, err := r.FormFile("file")
+	if r.MultipartForm == nil {
+		fmt.Printf("2Multipart form is still nil\n")
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
+	fmt.Printf("Success\n")
 	defer f.Close()
 
 	size := header.Size
 	fmt.Println(size)
 
+	var buf bytes.Buffer
 	io.Copy(&buf, f)
 	cccc := buf.Bytes()
 	data := string(cccc)
@@ -57,6 +71,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	err = db.InsertFile(r.Context(), content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
@@ -64,6 +79,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	err = queueFile(r.Context(), hash32)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
 

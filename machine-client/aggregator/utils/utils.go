@@ -71,8 +71,8 @@ func SendFile(cfg config.Config, path string, machine string) {
 	// Copying file content to request field
 	f.Seek(0, 0)
 
-	buf := &bytes.Buffer{}
-	writer := multipart.NewWriter(buf)
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
 	defer writer.Close()
 
 	part, err := writer.CreateFormFile("file", filepath.Base(path))
@@ -86,26 +86,15 @@ func SendFile(cfg config.Config, path string, machine string) {
 		println("Error while copying file:", err)
 		return
 	}
-
 	writer.Close()
-	f.Close()
 
 	// Construction of the request
 	url = "http://" + metadataOutput.Urls.UploadContent
 
 	// Execution of the request
-	res, err = executeHttpRequest(http.MethodPost, url, buf)
+	_, err = executeHttpFormFile(http.MethodPost, url, buf, writer.FormDataContentType())
 	if err != nil {
 		println("Error while uploading metadata:", err)
-		return
-	}
-	defer res.Body.Close()
-
-	// Response parsing
-	var output model.InsertMetadataOutput
-	err = json.NewDecoder(res.Body).Decode(&output)
-	if err != nil {
-		println("Error while converting metadata output:", err)
 		return
 	}
 }
@@ -124,6 +113,23 @@ func executeHttpRequest(method string, url string, payload any) (*http.Response,
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Execution of the request
+	return client.Do(req)
+}
+
+func executeHttpFormFile(method string, url string, buf bytes.Buffer, content string) (*http.Response, error) {
+	// Construction of the request
+	req, err := http.NewRequest(method, url, &buf)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", content)
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,

@@ -10,6 +10,8 @@ import (
 
 func addConfigMiddleware(cfg config.Config, h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("%v+\n", r)
+
 		ctx := context.WithValue(r.Context(), config.ContextConfig, cfg)
 		newReq := r.WithContext(ctx)
 		h.ServeHTTP(w, newReq)

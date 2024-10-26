@@ -36,7 +36,7 @@ func Discover(cfg config.Config, target model.Target, cache *Cache) {
 
 		//Open output file connection
 		outputPath := path.Join(cfg.FileDir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
-		outputFile, err := os.OpenFile(outputPath, os.O_CREATE, 0600)
+		outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			fmt.Printf("Error while opening or creating output file %s: %v\n", f, err)
 			continue
@@ -167,5 +167,5 @@ func printData(f *os.File, jsonByte []byte) error {
 }
 
 func printError(err error, data interface{}) {
-	fmt.Printf("Error while working:\nData:%v\nError:%v", data, err)
+	fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
 }
