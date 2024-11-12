@@ -8,3 +8,6 @@ res = db.metadata.createIndex({ client: 1, machine: 1, timestamp: 1 }, { name: "
 
 db.createCollection("content")
 res = db.content.createIndex({ hash: 1 }, { name: "hash-idx" })
+
+db.createCollection("timedata")
+res = db.content.createIndex({ client: 1, machine: 1, timestamp: 1 }, { name: "client-idx" })
