@@ -26,3 +26,14 @@ func main() {
 	// Starting up
 	fmt.Println(cfg)
 }
+
+/*
+
+Poll costante della coda in attesa di nuovi dati o in alternativa attesa in linea di dati
+Se dei dati sono pronti -> vengono scaricati, convertiti e elaborati
+Per ciascuna riga del file, si converte nel formato generico e si analizza il tipo di dato
+In base al tipo di dato si esegue un inserimento sulla tabella corretta
+Terminata l'elaborazione di un file si procede con quella successiva
+Non sono necessarie altre operazioni
+
+*/

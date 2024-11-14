@@ -23,6 +23,12 @@ type Config struct {
 			Content struct {
 				Name string `json:"name"`
 			} `json:"content"`
+			Interval struct {
+				Name string `json:"name"`
+			} `json:"interval"`
+			Gauge struct {
+				Name string `json:"name"`
+			} `json:"gauge"`
 		} `json:"collections"`
 	} `json:"db"`
 	Queue struct {
