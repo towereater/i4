@@ -3,17 +3,26 @@ package main
 import (
 	"aggregator/config"
 	"aggregator/dgpr646"
+	"fmt"
 	"math/rand"
 	"os"
 	"time"
 )
 
 func main() {
-	//Setup machine with config
-	cfg, err := config.ReadConfig("./config.json")
+	// Get run args
+	if len(os.Args) < 2 {
+		println("No config file set")
+		os.Exit(1)
+	}
+	configPath := os.Args[1]
+
+	// Setup machine config
+	fmt.Println("Loading configuration")
+	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
 		println("Error while reading config file:", err)
-		os.Exit(3)
+		os.Exit(2)
 	}
 
 	//Elaboration caches
