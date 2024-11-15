@@ -2,14 +2,14 @@ package api
 
 import (
 	"bytes"
+	"collector/config"
+	"collector/db"
+	"collector/model"
 	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"net/http"
-	"pusher/config"
-	"pusher/db"
-	"pusher/model"
 	"strconv"
 	"time"
 
@@ -48,7 +48,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	// TODO: CHECK HASH AND METADATA
 
 	// Creation of the file content object
-	content := model.FileContent{
+	content := model.UploadContent{
 		Hash:    hash32,
 		Content: cccc,
 	}
@@ -80,7 +80,7 @@ func queueFile(ctx context.Context, hash uint32) error {
 
 	// Creating topic writer with timeout
 	w := &kafka.Writer{
-		Addr:  kafka.TCP(fmt.Sprintf("%s:%s", cfg.Queue.Host, cfg.Queue.Port)),
+		Addr:  kafka.TCP(cfg.Queue.Host),
 		Topic: cfg.Queue.Topic,
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)

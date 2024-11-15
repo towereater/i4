@@ -1,17 +1,17 @@
 package db
 
 import (
+	"collector/config"
+	"collector/model"
 	"context"
-	"pusher/config"
-	"pusher/model"
 )
 
-func InsertFile(ctx context.Context, content model.FileContent) error {
+func InsertFile(ctx context.Context, content model.UploadContent) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Content.Name)
+	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Content)
 	if err != nil {
 		return err
 	}

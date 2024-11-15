@@ -1,11 +1,11 @@
 package main
 
 import (
+	"collector/api"
+	"collector/config"
 	"context"
 	"fmt"
 	"net/http"
-	"pusher/api"
-	"pusher/config"
 )
 
 func addConfigMiddleware(cfg config.Config, h http.HandlerFunc) http.HandlerFunc {
@@ -23,10 +23,10 @@ func SetupRoutes(cfg config.Config, s *http.ServeMux) {
 	s.HandleFunc("/", homeHandler)
 
 	// Handles data files API functions
-	s.HandleFunc("/data-files", addConfigMiddleware(cfg, filesHandler))
+	s.HandleFunc("/uploads/metadata", addConfigMiddleware(cfg, filesHandler))
 
 	// Handles data files API functions
-	s.HandleFunc(fmt.Sprintf("/data-files/{%s}", config.ContextHash),
+	s.HandleFunc(fmt.Sprintf("/uploads/content/{%s}", config.ContextHash),
 		addConfigMiddleware(cfg, filesByIdHandler))
 }
 

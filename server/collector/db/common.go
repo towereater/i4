@@ -1,8 +1,8 @@
 package db
 
 import (
+	"collector/config"
 	"context"
-	"pusher/config"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,7 +19,7 @@ func getCollection(ctx context.Context, db string, coll string) (*mongo.Collecti
 
 	// Connection to the db
 	client, err := mongo.Connect(ctx,
-		options.Client().ApplyURI("mongodb://"+cfg.DB.Host+":"+cfg.DB.Port))
+		options.Client().ApplyURI("mongodb://"+cfg.DB.Host))
 	if err != nil {
 		return nil, err
 	}

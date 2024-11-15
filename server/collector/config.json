@@ -1,0 +1,19 @@
+{
+    "server": {
+        "port": "12001"
+    },
+    "db": {
+        "host": "mongo:27017",
+        "timeout": 5,
+        "dbname": "i4",
+        "collections": {
+            "metadata": "uplmeta",
+            "content": "uplcont"
+        }
+    },
+    "queue": {
+        "host": "kafka:9092",
+        "timeout": 5,
+        "topic": "uploads"
+    }
+}

@@ -1,13 +1,13 @@
 package api
 
 import (
+	"collector/db"
+	"collector/model"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"net/http"
-	"pusher/db"
-	"pusher/model"
 )
 
 func InsertMetadata(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	hash.Write([]byte("word"))
 
 	// Generation of the metadata document
-	metadata := model.FileMetadata{
+	metadata := model.UploadMetadata{
 		Hash:      hash.Sum32(),
 		Client:    req.Client,
 		Machine:   req.Machine,
