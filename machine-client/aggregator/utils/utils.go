@@ -41,7 +41,7 @@ func SendFile(cfg config.Config, path string, machine string) {
 	}
 
 	// Construction of the request
-	url := "http://" + cfg.Server.Host + cfg.Server.UploadMetadata
+	url := "http://" + cfg.Collector.Host + cfg.Collector.UploadMetadata
 	metadataInput := model.InsertMetadataInput{
 		Client:    cfg.Client,
 		Machine:   machine,

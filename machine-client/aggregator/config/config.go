@@ -14,11 +14,11 @@ type Config struct {
 		Max float32 `json:"max"`
 		Min float32 `json:"min"`
 	} `json:"waitTime"`
-	Targets []model.Target `json:"targets"`
-	Server  struct {
+	Targets   []model.Target `json:"targets"`
+	Collector struct {
 		Host           string `json:"host"`
 		UploadMetadata string `json:"uploadMetadata"`
-	} `json:"server"`
+	} `json:"collector"`
 }
 
 func ReadConfig(path string) (Config, error) {

@@ -23,8 +23,8 @@
             "file": "dgwl854*.txt"
         }
     ],
-    "server": {
-        "host": "pusher:12001",
-        "uploadMetadata": "/data-files"
+    "collector": {
+        "host": "collector:12001",
+        "uploadMetadata": "/uploads/metadata"
     }
 }
