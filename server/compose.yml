@@ -1,8 +1,8 @@
 name: i4-server
 
 services:
-  pusher:
-    build: ./pusher
+  collector:
+    build: ./collector
     depends_on:
       kafka:
         condition: service_healthy
