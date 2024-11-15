@@ -19,7 +19,7 @@ func main() {
 	//Elaboration caches
 	dgpr646Cache := &dgpr646.Cache{}
 
-	//Create loop
+	//Main loop
 	for {
 		//dgpr646.Fetch()
 		dgpr646.Discover(cfg, cfg.Targets[0], dgpr646Cache)
