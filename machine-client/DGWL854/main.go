@@ -16,11 +16,19 @@ var userLogged bool
 var userId int32
 
 func main() {
-	//Setup machine with config
-	err := ReadConfig("./config.json")
+	// Get run args
+	if len((os.Args)) < 2 {
+		println("No config file set")
+		os.Exit(1)
+	}
+	configPath := os.Args[1]
+
+	// Setup machine config
+	fmt.Println("Loading configuration")
+	cfg, err := ReadConfig(configPath)
 	if err != nil {
 		println("Error while reading config file:", err)
-		os.Exit(3)
+		os.Exit(2)
 	}
 
 	//Setup machine with locals
@@ -33,7 +41,7 @@ func main() {
 
 		if jobStart && choice > 1 {
 			//Randomly generate water level data
-			err = generateWaterLevel()
+			err = generateWaterLevel(cfg)
 			if err != nil {
 				fmt.Println("Error while generating water level data:", err)
 				os.Exit(4)
@@ -41,7 +49,7 @@ func main() {
 		} else if userLogged && choice == 1 {
 			//Randomly generate job start data if a job is not active
 			//Randomly generate job end data if a job is active
-			err = generateJob()
+			err = generateJob(cfg)
 			if err != nil {
 				fmt.Println("Error while generating job data:", err)
 				os.Exit(4)
@@ -49,7 +57,7 @@ func main() {
 		} else {
 			//Randomly generate user login data if a user is logged
 			//Randomly generate user logoff data if a user is not logged
-			err = generateUserLog()
+			err = generateUserLog(cfg)
 			if err != nil {
 				fmt.Println("Error while generating user log data:", err)
 				os.Exit(4)
@@ -60,26 +68,26 @@ func main() {
 
 		//Wait some time
 		r := rand.Float32()
-		waitTime := r*(AppConfig.WaitTime.Max-AppConfig.WaitTime.Min) + AppConfig.WaitTime.Min
+		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
 		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 }
 
-func generateWaterLevel() error {
+func generateWaterLevel(cfg Config) error {
 	//Generate random data
 	r := rand.Float32()
-	water := r*(AppConfig.WaterLevel.Max-AppConfig.WaterLevel.Min) + AppConfig.WaterLevel.Min
+	water := r*(cfg.WaterLevel.Max-cfg.WaterLevel.Min) + cfg.WaterLevel.Min
 	datetime := time.Now().Format(time.DateTime)
 
 	//Open output file
-	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	//Write output file
-	output := fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.WaterLevel.Label, water)
+	output := fmt.Sprintf("%s, %s, %v\n", datetime, cfg.WaterLevel.Label, water)
 	fmt.Print(output)
 	_, err = f.WriteString(output)
 	if err != nil {
@@ -89,7 +97,7 @@ func generateWaterLevel() error {
 	return nil
 }
 
-func generateJob() error {
+func generateJob(cfg Config) error {
 	//Generate random data
 	if !jobStart {
 		jobId = rand.Int31()
@@ -100,7 +108,7 @@ func generateJob() error {
 	jobStart = !jobStart
 
 	//Open output file
-	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -109,9 +117,9 @@ func generateJob() error {
 	//Write output file
 	var output string
 	if jobStart {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.Job.Start, jobId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.Job.Start, jobId)
 	} else {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.Job.End, jobId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.Job.End, jobId)
 	}
 	fmt.Print(output)
 	_, err = f.WriteString(output)
@@ -122,7 +130,7 @@ func generateJob() error {
 	return nil
 }
 
-func generateUserLog() error {
+func generateUserLog(cfg Config) error {
 	//Generate random data
 	if !userLogged {
 		userId = rand.Int31()
@@ -133,7 +141,7 @@ func generateUserLog() error {
 	userLogged = !userLogged
 
 	//Open output file
-	f, err := os.OpenFile(AppConfig.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -142,9 +150,9 @@ func generateUserLog() error {
 	//Write output file
 	var output string
 	if userLogged {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.UserLog.Login, userId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.UserLog.Login, userId)
 	} else {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, AppConfig.UserLog.Logoff, userId)
+		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.UserLog.Logoff, userId)
 	}
 	fmt.Print(output)
 	_, err = f.WriteString(output)

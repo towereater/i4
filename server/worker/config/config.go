@@ -54,9 +54,6 @@ func ReadConfig(path string) (Config, error) {
 	//Conversion of the json to struct
 	var config Config
 	err = json.Unmarshal(byteFile, &config)
-	if err != nil {
-		return Config{}, err
-	}
 
-	return config, nil
+	return config, err
 }
