@@ -17,7 +17,7 @@ var userId int32
 
 func main() {
 	// Get run args
-	if len((os.Args)) < 2 {
+	if len(os.Args) < 2 {
 		println("No config file set")
 		os.Exit(1)
 	}
