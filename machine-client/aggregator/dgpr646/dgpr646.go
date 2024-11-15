@@ -88,14 +88,14 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 	return nil
 }
 
-func generatePressure(f *os.File, data []string) *model.FloatGauge {
+func generatePressure(f *os.File, data []string) *model.FloatDataGauge {
 	value, err := strconv.ParseFloat(data[2], 32)
 	if err != nil {
 		printError(err, data)
 		return nil
 	}
 
-	m := model.FloatGauge{
+	m := model.FloatDataGauge{
 		Timestamp: data[0],
 		Key:       data[1],
 		Value:     float32(value),
@@ -116,8 +116,8 @@ func generatePressure(f *os.File, data []string) *model.FloatGauge {
 	return &m
 }
 
-func generateJob(f *os.File, data []string) *model.StringGauge {
-	m := model.StringGauge{
+func generateJob(f *os.File, data []string) *model.StringDataGauge {
+	m := model.StringDataGauge{
 		Timestamp: data[0],
 		Key:       data[1],
 		Value:     data[2],
@@ -138,8 +138,8 @@ func generateJob(f *os.File, data []string) *model.StringGauge {
 	return &m
 }
 
-func generateJobInterval(f *os.File, jobStart model.StringGauge, jobEnd model.StringGauge) *model.Interval {
-	m := model.Interval{
+func generateJobInterval(f *os.File, jobStart model.StringDataGauge, jobEnd model.StringDataGauge) *model.DataInterval {
+	m := model.DataInterval{
 		Start: jobStart.Timestamp,
 		End:   jobEnd.Timestamp,
 		Key:   jobStart.Key,
