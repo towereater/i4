@@ -1,6 +1,6 @@
 package model
 
-type Gauge struct {
+type DataGauge struct {
 	Timestamp string   `json:"timestamp"`
 	Key       string   `json:"key"`
 	Value     any      `json:"value"`

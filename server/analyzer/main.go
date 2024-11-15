@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"worker/config"
+	"analyzer/config"
 )
 
 func main() {

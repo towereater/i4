@@ -1,23 +1,23 @@
 package db
 
 import (
+	"analyzer/config"
+	"analyzer/model"
 	"context"
-	"worker/config"
-	"worker/model"
 )
 
-func InsertGauge(ctx context.Context, metadata model.Gauge) error {
+func InsertInterval(ctx context.Context, content model.DataInterval) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Gauge.Name)
+	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Interval)
 	if err != nil {
 		return err
 	}
 
 	// Insert of a document
-	_, err = coll.InsertOne(ctx, metadata)
+	_, err = coll.InsertOne(ctx, content)
 
 	return err
 }

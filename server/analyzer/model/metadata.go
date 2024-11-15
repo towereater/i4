@@ -1,6 +1,6 @@
 package model
 
-type FileMetadata struct {
+type UploadMetadata struct {
 	Client    string `json:"client" bson:"client"`
 	Machine   string `json:"machine" bson:"machine"`
 	Timestamp string `json:"timestamp" bson:"ts"`
