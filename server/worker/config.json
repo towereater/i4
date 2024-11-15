@@ -24,9 +24,15 @@
         }
     },
     "queue": {
-        "host": "kafka",
-        "port": "9092",
+        "brokers": [
+            "kafka:9092"
+        ],
         "timeout": 5,
-        "topic": "docupl"
+        "topics": {
+            "data-upload": {
+                "topic": "docupl",
+                "group": "worker"
+            }
+        }
     }
 }

@@ -25,27 +25,15 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	hash32 := uint32(hash)
-	fmt.Printf("File hash is: %v\n", hash32)
-
-	fmt.Printf("Content-Type headers: %v\n", r.Header.Values("Content-Type"))
-	fmt.Printf("Content-Type first header: %v\n", r.Header.Values("Content-Type")[0])
 
 	// Get the file content
 	r.ParseMultipartForm(32 << 20)
-	fmt.Printf("Content length: %v\n", r.ContentLength)
-	if r.MultipartForm == nil {
-		fmt.Printf("1Multipart form is still nil\n")
-	}
 	f, header, err := r.FormFile("file")
-	if r.MultipartForm == nil {
-		fmt.Printf("2Multipart form is still nil\n")
-	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	fmt.Printf("Success\n")
 	defer f.Close()
 
 	size := header.Size
@@ -56,8 +44,6 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	cccc := buf.Bytes()
 	data := string(cccc)
 	fmt.Println(data)
-
-	//buf.Reset()
 
 	// TODO: CHECK HASH AND METADATA
 

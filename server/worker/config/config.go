@@ -32,10 +32,9 @@ type Config struct {
 		} `json:"collections"`
 	} `json:"db"`
 	Queue struct {
-		Host    string `json:"host"`
-		Port    string `json:"port"`
-		Timeout int    `json:"timeout"`
-		Topic   string `json:"topic"`
+		Brokers []string `json:"brokers"`
+		Timeout int      `json:"timeout"`
+		Topic   string   `json:"topic"`
 	} `json:"queue"`
 }
 
