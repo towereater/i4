@@ -17,7 +17,7 @@ services:
     image: apache/kafka:3.8.0
     env_file: ./kafka/config.env
     healthcheck:
-      test: kafka-topics.sh --bootstrap-server kafka:9092 --topic docupl --describe
+      test: kafka-topics.sh --bootstrap-server kafka:9092 --topic uploads --describe
       interval: 5s
       timeout: 5s
       retries: 10
@@ -37,7 +37,7 @@ services:
     command: |
       "
       kafka-topics.sh --bootstrap-server kafka:9092 --list
-      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic docupl --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic uploads --replication-factor 1 --partitions 1
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
     networks:
