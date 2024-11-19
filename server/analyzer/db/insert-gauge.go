@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func InsertGauge(ctx context.Context, metadata model.DataGauge) error {
+func InsertGauge(ctx context.Context, data model.DataGauge) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -17,7 +17,7 @@ func InsertGauge(ctx context.Context, metadata model.DataGauge) error {
 	}
 
 	// Insert of a document
-	_, err = coll.InsertOne(ctx, metadata)
+	_, err = coll.InsertOne(ctx, data)
 
 	return err
 }

@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func InsertInterval(ctx context.Context, content model.DataInterval) error {
+func InsertInterval(ctx context.Context, data model.DataInterval) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -17,7 +17,7 @@ func InsertInterval(ctx context.Context, content model.DataInterval) error {
 	}
 
 	// Insert of a document
-	_, err = coll.InsertOne(ctx, content)
+	_, err = coll.InsertOne(ctx, data)
 
 	return err
 }
