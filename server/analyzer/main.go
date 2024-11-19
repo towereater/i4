@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	"analyzer/config"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func main() {
@@ -22,31 +27,34 @@ func main() {
 		println("Error while reading config file:", err)
 		os.Exit(2)
 	}
-
-	// Starting up
-	fmt.Println(cfg)
+	ctx := context.WithValue(context.Background(), config.ContextConfig, cfg)
 
 	// Main loop
 	for {
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
+
 		// Poll
+		unqueueFile(ctx)
+
+		cancel()
 	}
 }
 
-/*
 func unqueueFile(ctx context.Context) error {
 	// Extracting config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Creating topic reader with timeout
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  []string{"localhost:9092", "localhost:9093", "localhost:9094"},
-		GroupID:  "consumer-group-id",
-		Topic:    "topic-A",
-		MaxBytes: 10e6, // 10MB
+		Brokers:  cfg.Queue.Brokers,
+		GroupID:  cfg.Queue.Uploads.Group,
+		Topic:    cfg.Queue.Uploads.Topic,
+		MaxBytes: 10e6,
 	})
+	defer r.Close()
 
 	for {
-		m, err := r.ReadMessage(context.Background())
+		m, err := r.ReadMessage(ctx)
 		if err != nil {
 			break
 		}
@@ -57,34 +65,8 @@ func unqueueFile(ctx context.Context) error {
 		log.Fatal("failed to close reader:", err)
 	}
 
-	/////////
-	w := &kafka.Writer{
-		Addr:  kafka.TCP(fmt.Sprintf("%s:%s", cfg.Queue.Host, cfg.Queue.Port)),
-		Topic: cfg.Queue.Topic,
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
-	defer cancel()
-
-	// Preparing data for queue
-	datetime := time.Now().Format(time.DateTime)
-	h := make([]byte, 4)
-	binary.LittleEndian.PutUint32(h, hash)
-
-	// Writing hash on queue
-	err := w.WriteMessages(ctx,
-		kafka.Message{
-			Key:   []byte(datetime),
-			Value: h,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return w.Close()
+	return r.Close()
 }
-
-*/
 
 /*
 
