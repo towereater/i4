@@ -42,8 +42,6 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	io.Copy(&buf, f)
 	cccc := buf.Bytes()
-	data := string(cccc)
-	fmt.Println(data)
 
 	// TODO: CHECK HASH AND METADATA
 
@@ -62,7 +60,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Queue server-side file elaboration
-	err = queueFile(r.Context(), hash32)
+	err = queueContent(r.Context(), hash32)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		fmt.Printf("Error: %v\n", err)
@@ -74,7 +72,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func queueFile(ctx context.Context, hash uint32) error {
+func queueContent(ctx context.Context, hash uint32) error {
 	// Extracting config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
