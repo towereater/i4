@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
-	"log"
 	"os"
+	"strings"
 	"time"
 
 	"analyzer/config"
+	"analyzer/db"
+	"analyzer/model"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -31,20 +35,88 @@ func main() {
 
 	// Main loop
 	for {
+		// Poll the queue for data
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
+		hash, err := unqueueContent(ctx)
+		cancel()
+		if err != nil {
+			println("Error while reading queued content:", err)
+			continue
+		}
 
-		// Poll
-		unqueueFile(ctx)
+		// Get content from database
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(cfg.DB.Timeout)*time.Second)
+		uplContent, err := db.SelectContent(ctx, hash)
+		cancel()
+		if err != nil {
+			println("Error while reading from database:", err)
+			continue
+		}
 
+		// Convert and split the content
+		data := strings.Split(string(uplContent.Content), "\n")
+		println(data)
+
+		// Save data to database
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(cfg.DB.Timeout)*time.Second)
+		for _, r := range data {
+			// Parsing of the content
+			var content model.DataContent
+			err = json.Unmarshal([]byte(r), &content)
+			if err != nil {
+				println("Error while converting content:", err)
+				continue
+			}
+
+			switch content.Type {
+			// Content is a interval
+			case "INT":
+				err = saveDataInterval(ctx, content.Content)
+			// Content is a gauge
+			case "GAU":
+				err = saveDataGauge(ctx, content.Content)
+			}
+			if err != nil {
+				println("Error while converting data:", err)
+			}
+		}
 		cancel()
 	}
 }
 
-func unqueueFile(ctx context.Context) error {
-	// Extracting config
+func saveDataInterval(ctx context.Context, content string) error {
+	// Parsing of the content
+	var data model.DataInterval
+	err := json.Unmarshal([]byte(content), &data)
+	if err != nil {
+		return err
+	}
+
+	// Save the content
+	err = db.InsertInterval(ctx, data)
+
+	return err
+}
+
+func saveDataGauge(ctx context.Context, content string) error {
+	// Parsing of the content
+	var data model.DataGauge
+	err := json.Unmarshal([]byte(content), &data)
+	if err != nil {
+		return err
+	}
+
+	// Save the content
+	err = db.InsertGauge(ctx, data)
+
+	return err
+}
+
+func unqueueContent(ctx context.Context) (uint32, error) {
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
-	// Creating topic reader with timeout
+	// Create topic reader with timeout
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  cfg.Queue.Brokers,
 		GroupID:  cfg.Queue.Uploads.Group,
@@ -53,28 +125,15 @@ func unqueueFile(ctx context.Context) error {
 	})
 	defer r.Close()
 
-	for {
-		m, err := r.ReadMessage(ctx)
-		if err != nil {
-			break
-		}
-		fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+	// Read the message from queue
+	m, err := r.ReadMessage(ctx)
+	if err != nil {
+		println("Error while reading queued content:", err)
+		os.Exit(3)
 	}
 
-	if err := r.Close(); err != nil {
-		log.Fatal("failed to close reader:", err)
-	}
+	// Convert the read value
+	hash := binary.LittleEndian.Uint32(m.Value)
 
-	return r.Close()
+	return hash, r.Close()
 }
-
-/*
-
-Poll costante della coda in attesa di nuovi dati o in alternativa attesa in linea di dati
-Se dei dati sono pronti -> vengono scaricati, convertiti e elaborati
-Per ciascuna riga del file, si converte nel formato generico e si analizza il tipo di dato
-In base al tipo di dato si esegue un inserimento sulla tabella corretta
-Terminata l'elaborazione di un file si procede con quella successiva
-Non sono necessarie altre operazioni
-
-*/
