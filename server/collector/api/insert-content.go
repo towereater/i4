@@ -54,7 +54,7 @@ func InsertFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execution of the request
-	err = db.InsertFile(r.Context(), content)
+	err = db.InsertContent(r.Context(), content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		fmt.Printf("Error: %v\n", err)

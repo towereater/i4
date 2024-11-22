@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func InsertFile(ctx context.Context, content model.UploadContent) error {
+func InsertContent(ctx context.Context, content model.UploadContent) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
