@@ -2,7 +2,7 @@ package model
 
 type DataContent struct {
 	Type    string `json:"type"`
-	Content string `json:"content"`
+	Content any    `json:"content"`
 }
 
 type DataInterval struct {

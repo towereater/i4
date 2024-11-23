@@ -81,8 +81,10 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 		}
 
 		// Save data to file
-		jsonByte, err := json.Marshal(content)
+		fmt.Printf("%+v\n", *content)
+		jsonByte, err := json.Marshal(*content)
 		if err == nil {
+			fmt.Printf("Error while converting content: %v\n", err)
 			continue
 		}
 		fmt.Fprintf(outputFile, "%v\n", jsonByte)
@@ -90,7 +92,7 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 		// Addional elaborations for job interval
 		if data[1] == "JOBEND" && cache.Job != nil && job != nil && cache.Job.Value == job.Value {
 			content = formatJobInterval(*cache.Job, *job)
-			jsonByte, _ = json.Marshal(content)
+			jsonByte, _ = json.Marshal(*content)
 			fmt.Fprintf(outputFile, "%v\n", jsonByte)
 		}
 	}
@@ -111,16 +113,23 @@ func formatPressure(data []string) *model.DataContent {
 		Value:     float32(value),
 	}
 
-	jsonByte, err := json.Marshal(m)
-	if err != nil {
-		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
-		return nil
-	}
-
 	return &model.DataContent{
 		Type:    "GAU",
-		Content: string(jsonByte),
+		Content: m,
 	}
+
+	/*
+		jsonByte, err := json.Marshal(m)
+		if err != nil {
+			fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
+			return nil
+		}
+
+		return &model.DataContent{
+			Type:    "GAU",
+			Content: string(jsonByte),
+		}
+	*/
 }
 
 func formatJob(data []string) (*model.DataContent, *model.DataGauge) {
@@ -130,16 +139,23 @@ func formatJob(data []string) (*model.DataContent, *model.DataGauge) {
 		Value:     data[2],
 	}
 
-	jsonByte, err := json.Marshal(m)
-	if err != nil {
-		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
-		return nil, nil
-	}
-
 	return &model.DataContent{
 		Type:    "GAU",
-		Content: string(jsonByte),
+		Content: m,
 	}, &m
+
+	/*
+		jsonByte, err := json.Marshal(m)
+		if err != nil {
+			fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
+			return nil, nil
+		}
+
+		return &model.DataContent{
+			Type:    "GAU",
+			Content: string(jsonByte),
+		}, &m
+	*/
 }
 
 func formatJobInterval(jobStart model.DataGauge, jobEnd model.DataGauge) *model.DataContent {
@@ -149,14 +165,21 @@ func formatJobInterval(jobStart model.DataGauge, jobEnd model.DataGauge) *model.
 		Key:   jobStart.Key,
 	}
 
-	jsonByte, err := json.Marshal(m)
-	if err != nil {
-		fmt.Printf("Error while working:\nData:%v\nError:%v\n", jobStart, err)
-		return nil
-	}
-
 	return &model.DataContent{
 		Type:    "INT",
-		Content: string(jsonByte),
+		Content: m,
 	}
+
+	/*
+		jsonByte, err := json.Marshal(m)
+		if err != nil {
+			fmt.Printf("Error while working:\nData:%v\nError:%v\n", jobStart, err)
+			return nil
+		}
+
+		return &model.DataContent{
+			Type:    "INT",
+			Content: string(jsonByte),
+		}
+	*/
 }
