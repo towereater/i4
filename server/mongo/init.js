@@ -1,13 +1,16 @@
-var res
-
 use("i4")
 
-db.createCollection("metadata")
-res = db.metadata.createIndex({ hash: 1 }, { name: "hash-idx" })
-res = db.metadata.createIndex({ client: 1, machine: 1, timestamp: 1 }, { name: "client-idx" })
+db.createCollection("uplmeta")
+db.uplmeta.createIndex({ hash: 1 }, { name: "hash-idx" })
+db.uplmeta.createIndex({ client: 1, machine: 1, ts: 1 }, { name: "client-idx" })
 
-db.createCollection("content")
-res = db.content.createIndex({ hash: 1 }, { name: "hash-idx" })
+db.createCollection("uplcont")
+db.uplcont.createIndex({ hash: 1 }, { name: "hash-idx" })
 
-db.createCollection("timedata")
-res = db.content.createIndex({ client: 1, machine: 1, timestamp: 1 }, { name: "client-idx" })
+use("i4-0001")
+
+db.createCollection("datagau")
+db.datagau.createIndex({ machine: 1, key: 1, value: 1, ts: 1 }, { name: "client-idx" })
+
+db.createCollection("dataint")
+db.dataint.createIndex({ machine: 1, key: 1, value: 1, start: 1, end: 1 }, { name: "client-idx" })

@@ -7,19 +7,19 @@ type UploadContent struct {
 
 type DataContent struct {
 	Type    string `json:"type"`
-	Content string `json:"content"`
-}
-
-type DataInterval struct {
-	Start  string   `json:"start"`
-	End    string   `json:"end"`
-	Key    string   `json:"key"`
-	Params []string `json:"params,omitempty"`
+	Content any    `json:"content"`
 }
 
 type DataGauge struct {
-	Timestamp string   `json:"timestamp"`
-	Key       string   `json:"key"`
-	Value     any      `json:"value"`
+	Key       string   `json:"key" bson:"key"`
+	Value     any      `json:"value" bson:"value"`
+	Timestamp string   `json:"timestamp" bson:"timestamp"`
 	Params    []string `json:"params,omitempty"`
+}
+
+type DataInterval struct {
+	Key    string   `json:"key" bson:"key"`
+	Start  string   `json:"start" bson:"start"`
+	End    string   `json:"end" bson:"end"`
+	Params []string `json:"params,omitempty" bson:"params"`
 }

@@ -4,14 +4,17 @@ import (
 	"analyzer/config"
 	"analyzer/model"
 	"context"
+	"fmt"
 )
 
-func InsertInterval(ctx context.Context, data model.DataInterval) error {
+func InsertInterval(ctx context.Context, client string, data model.DataInterval) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Interval)
+	coll, err := getCollection(ctx,
+		fmt.Sprintf("%s-%s", cfg.DB.DBName, client),
+		cfg.DB.Collections.Interval)
 	if err != nil {
 		return err
 	}

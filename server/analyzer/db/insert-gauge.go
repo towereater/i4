@@ -4,14 +4,17 @@ import (
 	"analyzer/config"
 	"analyzer/model"
 	"context"
+	"fmt"
 )
 
-func InsertGauge(ctx context.Context, data model.DataGauge) error {
+func InsertGauge(ctx context.Context, client string, data model.DataGauge) error {
 	// Extract configuration from context
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Gauge)
+	coll, err := getCollection(ctx,
+		fmt.Sprintf("%s-%s", cfg.DB.DBName, client),
+		cfg.DB.Collections.Gauge)
 	if err != nil {
 		return err
 	}

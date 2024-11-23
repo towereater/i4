@@ -23,11 +23,11 @@ func SetupRoutes(cfg config.Config, s *http.ServeMux) {
 	s.HandleFunc("/", homeHandler)
 
 	// Handles data files API functions
-	s.HandleFunc("/uploads/metadata", addConfigMiddleware(cfg, filesHandler))
+	s.HandleFunc("/uploads/metadata", addConfigMiddleware(cfg, metadataHandler))
 
 	// Handles data files API functions
 	s.HandleFunc(fmt.Sprintf("/uploads/content/{%s}", config.ContextHash),
-		addConfigMiddleware(cfg, filesByIdHandler))
+		addConfigMiddleware(cfg, contentByIdHandler))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello from files API")
 }
 
-func filesHandler(w http.ResponseWriter, r *http.Request) {
+func metadataHandler(w http.ResponseWriter, r *http.Request) {
 	// Check of the method request
 	switch r.Method {
 	case "POST":
@@ -46,11 +46,11 @@ func filesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func filesByIdHandler(w http.ResponseWriter, r *http.Request) {
+func contentByIdHandler(w http.ResponseWriter, r *http.Request) {
 	// Check of the method request
 	switch r.Method {
 	case "POST":
-		api.InsertFile(w, r)
+		api.InsertContent(w, r)
 	default:
 		http.Error(w, r.Method, http.StatusMethodNotAllowed)
 	}

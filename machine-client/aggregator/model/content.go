@@ -5,16 +5,16 @@ type DataContent struct {
 	Content any    `json:"content"`
 }
 
-type DataInterval struct {
-	Start  string   `json:"start"`
-	End    string   `json:"end"`
-	Key    string   `json:"key"`
-	Params []string `json:"params,omitempty"`
-}
-
 type DataGauge struct {
-	Timestamp string   `json:"timestamp"`
 	Key       string   `json:"key"`
 	Value     any      `json:"value"`
+	Timestamp string   `json:"ts"`
 	Params    []string `json:"params,omitempty"`
+}
+
+type DataInterval struct {
+	Key    string   `json:"key"`
+	Start  string   `json:"start"`
+	End    string   `json:"end"`
+	Params []string `json:"params,omitempty"`
 }

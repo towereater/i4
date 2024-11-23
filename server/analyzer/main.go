@@ -37,7 +37,7 @@ func main() {
 	for {
 		// Poll the queue for data
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
-		hash, err := unqueueContent(ctx)
+		hash, client, err := unqueueContent(ctx)
 		cancel()
 		if err != nil {
 			println("Error while reading queued content:", err)
@@ -71,10 +71,10 @@ func main() {
 			switch content.Type {
 			// Content is a interval
 			case "INT":
-				err = saveDataInterval(ctx, content.Content)
+				err = db.InsertInterval(ctx, client, content.Content.(model.DataInterval))
 			// Content is a gauge
 			case "GAU":
-				err = saveDataGauge(ctx, content.Content)
+				err = db.InsertGauge(ctx, client, content.Content.(model.DataGauge))
 			}
 			if err != nil {
 				println("Error while converting data:", err)
@@ -84,35 +84,7 @@ func main() {
 	}
 }
 
-func saveDataInterval(ctx context.Context, content string) error {
-	// Parsing of the content
-	var data model.DataInterval
-	err := json.Unmarshal([]byte(content), &data)
-	if err != nil {
-		return err
-	}
-
-	// Save the content
-	err = db.InsertInterval(ctx, data)
-
-	return err
-}
-
-func saveDataGauge(ctx context.Context, content string) error {
-	// Parsing of the content
-	var data model.DataGauge
-	err := json.Unmarshal([]byte(content), &data)
-	if err != nil {
-		return err
-	}
-
-	// Save the content
-	err = db.InsertGauge(ctx, data)
-
-	return err
-}
-
-func unqueueContent(ctx context.Context) (uint32, error) {
+func unqueueContent(ctx context.Context) (uint32, string, error) {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -133,7 +105,8 @@ func unqueueContent(ctx context.Context) (uint32, error) {
 	}
 
 	// Convert the read value
-	hash := binary.LittleEndian.Uint32(m.Value)
+	hash := binary.LittleEndian.Uint32(m.Value[0:4])
+	client := string(m.Value[4:4])
 
-	return hash, r.Close()
+	return hash, client, r.Close()
 }

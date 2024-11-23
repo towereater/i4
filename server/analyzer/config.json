@@ -7,9 +7,10 @@
         "timeout": 5,
         "dbname": "i4",
         "collections": {
+            "metadata": "uplmeta",
             "content": "uplcont",
-            "interval": "dataint",
-            "gauge": "datagau"
+            "gauge": "datagau",
+            "interval": "dataint"
         }
     },
     "queue": {

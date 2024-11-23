@@ -15,9 +15,10 @@ type Config struct {
 		Timeout     int    `json:"timeout"`
 		DBName      string `json:"dbname"`
 		Collections struct {
-			Content  string `json:"content"`
-			Interval string `json:"interval"`
-			Gauge    string `json:"gauge"`
+			Metadata string `json:"uplmeta"`
+			Content  string `json:"uplcont"`
+			Gauge    string `json:"datagau"`
+			Interval string `json:"dataint"`
 		} `json:"collections"`
 	} `json:"db"`
 	Queue struct {

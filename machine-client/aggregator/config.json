@@ -1,6 +1,6 @@
 {
     "fileDir": "./data/",
-    "client": "COBALM",
+    "client": "0001",
     "waitTime": {
         "max": 15.0,
         "min": 10.0
