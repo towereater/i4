@@ -12,6 +12,11 @@ services:
       - "12001:12001"
     networks:
       - back-tier
+
+  analyzer:
+    build: ./analyzer
+    networks:
+      - back-tier
   
   kafka:
     image: apache/kafka:3.8.0
