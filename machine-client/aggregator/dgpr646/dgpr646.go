@@ -58,44 +58,54 @@ func Discover(cfg config.Config, target model.Target, cache *Cache) {
 }
 
 func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
+	var content *model.DataContent
+	var job *model.DataGauge
+
 	//Read file line by line and split each one
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 		data := strings.Split(scanner.Text(), ", ")
 
-		if data[1] == "PRESSURE" {
-			generatePressure(outputFile, data)
-		} else if data[1] == "JOBSTART" {
-			m := generateJob(outputFile, data)
-
-			//Setting cache data
-			if m != nil {
-				cache.Job = m
-			}
-		} else if data[1] == "JOBEND" {
-			m := generateJob(outputFile, data)
-
-			//Checking cache data
-			if cache.Job != nil && m != nil && cache.Job.Value == m.Value {
-				generateJobInterval(outputFile, *cache.Job, *m)
-			}
-		} else {
+		// Format and convert data
+		switch data[1] {
+		case "PRESSURE":
+			content = formatPressure(data)
+		case "JOBSTART":
+			content, job = formatJob(data)
+			cache.Job = job
+		case "JOBEND":
+			content, job = formatJob(data)
+		default:
 			continue
+		}
+
+		// Save data to file
+		jsonByte, err := json.Marshal(content)
+		if err == nil {
+			continue
+		}
+		fmt.Fprintf(outputFile, "%v\n", jsonByte)
+
+		// Addional elaborations for job interval
+		if data[1] == "JOBEND" && cache.Job != nil && job != nil && cache.Job.Value == job.Value {
+			content = formatJobInterval(*cache.Job, *job)
+			jsonByte, _ = json.Marshal(content)
+			fmt.Fprintf(outputFile, "%v\n", jsonByte)
 		}
 	}
 
 	return nil
 }
 
-func generatePressure(f *os.File, data []string) *model.FloatDataGauge {
+func formatPressure(data []string) *model.DataContent {
 	value, err := strconv.ParseFloat(data[2], 32)
 	if err != nil {
-		printError(err, data)
+		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
 		return nil
 	}
 
-	m := model.FloatDataGauge{
+	m := model.DataGauge{
 		Timestamp: data[0],
 		Key:       data[1],
 		Value:     float32(value),
@@ -103,21 +113,18 @@ func generatePressure(f *os.File, data []string) *model.FloatDataGauge {
 
 	jsonByte, err := json.Marshal(m)
 	if err != nil {
-		printError(err, data)
+		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
 		return nil
 	}
 
-	err = printData(f, jsonByte)
-	if err != nil {
-		printError(err, data)
-		return nil
+	return &model.DataContent{
+		Type:    "GAU",
+		Content: string(jsonByte),
 	}
-
-	return &m
 }
 
-func generateJob(f *os.File, data []string) *model.StringDataGauge {
-	m := model.StringDataGauge{
+func formatJob(data []string) (*model.DataContent, *model.DataGauge) {
+	m := model.DataGauge{
 		Timestamp: data[0],
 		Key:       data[1],
 		Value:     data[2],
@@ -125,20 +132,17 @@ func generateJob(f *os.File, data []string) *model.StringDataGauge {
 
 	jsonByte, err := json.Marshal(m)
 	if err != nil {
-		printError(err, data)
-		return nil
+		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
+		return nil, nil
 	}
 
-	err = printData(f, jsonByte)
-	if err != nil {
-		printError(err, data)
-		return nil
-	}
-
-	return &m
+	return &model.DataContent{
+		Type:    "GAU",
+		Content: string(jsonByte),
+	}, &m
 }
 
-func generateJobInterval(f *os.File, jobStart model.StringDataGauge, jobEnd model.StringDataGauge) *model.DataInterval {
+func formatJobInterval(jobStart model.DataGauge, jobEnd model.DataGauge) *model.DataContent {
 	m := model.DataInterval{
 		Start: jobStart.Timestamp,
 		End:   jobEnd.Timestamp,
@@ -147,25 +151,12 @@ func generateJobInterval(f *os.File, jobStart model.StringDataGauge, jobEnd mode
 
 	jsonByte, err := json.Marshal(m)
 	if err != nil {
-		printError(err, jobStart)
+		fmt.Printf("Error while working:\nData:%v\nError:%v\n", jobStart, err)
 		return nil
 	}
 
-	err = printData(f, jsonByte)
-	if err != nil {
-		printError(err, jobStart)
-		return nil
+	return &model.DataContent{
+		Type:    "INT",
+		Content: string(jsonByte),
 	}
-
-	return &m
-}
-
-func printData(f *os.File, jsonByte []byte) error {
-	_, err := f.WriteString(fmt.Sprintf("%v\n", string(jsonByte)))
-
-	return err
-}
-
-func printError(err error, data interface{}) {
-	fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
 }
