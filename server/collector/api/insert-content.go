@@ -21,7 +21,6 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	hash, err := strconv.ParseUint(r.PathValue(string(config.ContextHash)), 10, 32)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		fmt.Printf("Error: %v\n", err)
 		return
 	}
 	hash32 := uint32(hash)
@@ -31,7 +30,6 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	f, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		fmt.Printf("Error: %v\n", err)
 		return
 	}
 	defer f.Close()

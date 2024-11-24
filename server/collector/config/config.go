@@ -15,8 +15,8 @@ type Config struct {
 		Timeout     int    `json:"timeout"`
 		DBName      string `json:"dbname"`
 		Collections struct {
-			Metadata string `json:"uplmeta"`
-			Content  string `json:"uplcont"`
+			Metadata string `json:"metadata"`
+			Content  string `json:"content"`
 		} `json:"collections"`
 	} `json:"db"`
 	Queue struct {

@@ -18,8 +18,7 @@ func getCollection(ctx context.Context, db string, coll string) (*mongo.Collecti
 	defer cancel()
 
 	// Connection to the db
-	client, err := mongo.Connect(ctx,
-		options.Client().ApplyURI("mongodb://"+cfg.DB.Host))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+cfg.DB.Host))
 	if err != nil {
 		return nil, err
 	}
