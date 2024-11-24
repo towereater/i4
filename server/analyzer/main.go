@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"analyzer/config"
 	"analyzer/db"
@@ -36,18 +35,15 @@ func main() {
 	// Main loop
 	for {
 		// Poll the queue for data
-		ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Queue.Timeout)*time.Second)
 		hash, client, err := unqueueContent(ctx)
-		cancel()
+		fmt.Printf("hash: %v, client: %v\n", hash, client)
 		if err != nil {
 			println("Error while reading queued content:", err)
 			continue
 		}
 
 		// Get content from database
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(cfg.DB.Timeout)*time.Second)
 		uplContent, err := db.SelectContent(ctx, hash)
-		cancel()
 		if err != nil {
 			println("Error while reading from database:", err)
 			continue
@@ -58,7 +54,6 @@ func main() {
 		println(data)
 
 		// Save data to database
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(cfg.DB.Timeout)*time.Second)
 		for _, r := range data {
 			// Parsing of the content
 			var content model.DataContent
@@ -80,7 +75,6 @@ func main() {
 				println("Error while converting data:", err)
 			}
 		}
-		cancel()
 	}
 }
 
@@ -90,10 +84,9 @@ func unqueueContent(ctx context.Context) (uint32, string, error) {
 
 	// Create topic reader with timeout
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  cfg.Queue.Brokers,
-		GroupID:  cfg.Queue.Uploads.Group,
-		Topic:    cfg.Queue.Uploads.Topic,
-		MaxBytes: 10e6,
+		Brokers: cfg.Queue.Brokers,
+		GroupID: cfg.Queue.Uploads.Group,
+		Topic:   cfg.Queue.Uploads.Topic,
 	})
 	defer r.Close()
 
@@ -106,7 +99,7 @@ func unqueueContent(ctx context.Context) (uint32, string, error) {
 
 	// Convert the read value
 	hash := binary.LittleEndian.Uint32(m.Value[0:4])
-	client := string(m.Value[4:4])
+	client := string(m.Value[4:8])
 
 	return hash, client, r.Close()
 }

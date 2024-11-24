@@ -97,7 +97,7 @@ func queueContent(ctx context.Context, hash uint32, client string) error {
 	datetime := time.Now().Format(time.DateTime)
 	h := make([]byte, 4)
 	binary.LittleEndian.PutUint32(h, hash)
-	value := append(h, []byte(client)...)
+	value := append(h, client...)
 
 	// Writing hash on queue
 	err := w.WriteMessages(ctx,
