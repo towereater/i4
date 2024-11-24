@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Loading configuration")
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		println("Error while reading config file:", err)
+		println("Error while reading config file:", err.Error())
 		os.Exit(2)
 	}
 	ctx := context.WithValue(context.Background(), config.ContextConfig, cfg)
@@ -36,43 +36,68 @@ func main() {
 	for {
 		// Poll the queue for data
 		hash, client, err := unqueueContent(ctx)
-		fmt.Printf("hash: %v, client: %v\n", hash, client)
 		if err != nil {
-			println("Error while reading queued content:", err)
+			println("Error while reading queued content:", err.Error())
 			continue
 		}
 
-		// Get content from database
-		uplContent, err := db.SelectContent(ctx, hash)
+		// Get metadata from database
+		metadata, err := db.SelectMetadata(ctx, hash)
 		if err != nil {
-			println("Error while reading from database:", err)
+			println("Error while reading from metadata db:", err.Error())
+			return
+		}
+
+		// Get content from database
+		content, err := db.SelectContent(ctx, hash)
+		if err != nil {
+			println("Error while reading from content db:", err.Error())
 			continue
 		}
 
 		// Convert and split the content
-		data := strings.Split(string(uplContent.Content), "\n")
-		println(data)
+		data := strings.Split(string(content.Content), "\n")
+		fmt.Printf("data is: %+v\n", data)
 
 		// Save data to database
 		for _, r := range data {
+			if r == "" {
+				continue
+			}
+			fmt.Printf("r is: %+v\n", r)
+
 			// Parsing of the content
-			var content model.DataContent
-			err = json.Unmarshal([]byte(r), &content)
+			var dataContent model.DataContent
+			err = json.Unmarshal([]byte(r), &dataContent)
 			if err != nil {
-				println("Error while converting content:", err)
+				println("Error while converting data content to string:", err.Error())
 				continue
 			}
 
-			switch content.Type {
-			// Content is a interval
-			case "INT":
-				err = db.InsertInterval(ctx, client, content.Content.(model.DataInterval))
+			fmt.Printf("dataContent is: %+v\n", dataContent)
+			fmt.Printf("dataContent.Content is: %+v\n", dataContent.Content)
+			jsonString, err := json.Marshal(dataContent.Content)
+			if err != nil {
+				println("Error while converting content to json:", err.Error())
+				continue
+			}
+
+			switch dataContent.Type {
 			// Content is a gauge
 			case "GAU":
-				err = db.InsertGauge(ctx, client, content.Content.(model.DataGauge))
+				var gauge model.DataGauge
+				json.Unmarshal(jsonString, &gauge)
+				gauge.Machine = metadata.Machine
+				err = db.InsertGauge(ctx, client, gauge)
+			// Content is a interval
+			case "INT":
+				var interval model.DataInterval
+				json.Unmarshal(jsonString, &interval)
+				interval.Machine = metadata.Machine
+				err = db.InsertInterval(ctx, client, interval)
 			}
 			if err != nil {
-				println("Error while converting data:", err)
+				println("Error while converting content to string:", err.Error())
 			}
 		}
 	}
@@ -93,7 +118,7 @@ func unqueueContent(ctx context.Context) (uint32, string, error) {
 	// Read the message from queue
 	m, err := r.ReadMessage(ctx)
 	if err != nil {
-		println("Error while reading queued content:", err)
+		println("Error while reading queued content:", err.Error())
 		os.Exit(3)
 	}
 

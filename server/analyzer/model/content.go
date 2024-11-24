@@ -11,15 +11,17 @@ type DataContent struct {
 }
 
 type DataGauge struct {
+	Machine   string   `json:"machine,omitempty" bson:"machine"`
 	Key       string   `json:"key" bson:"key"`
 	Value     any      `json:"value" bson:"value"`
 	Timestamp string   `json:"timestamp" bson:"timestamp"`
-	Params    []string `json:"params,omitempty"`
+	Params    []string `json:"params,omitempty" bson:"params,omitempty"`
 }
 
 type DataInterval struct {
-	Key    string   `json:"key" bson:"key"`
-	Start  string   `json:"start" bson:"start"`
-	End    string   `json:"end" bson:"end"`
-	Params []string `json:"params,omitempty" bson:"params"`
+	Machine string   `json:"machine,omitempty" bson:"machine"`
+	Key     string   `json:"key" bson:"key"`
+	Start   string   `json:"start" bson:"start"`
+	End     string   `json:"end" bson:"end"`
+	Params  []string `json:"params,omitempty" bson:"params,omitempty"`
 }
