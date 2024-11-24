@@ -26,7 +26,12 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	hash32 := uint32(hash)
 
 	// Get the file content
-	r.ParseMultipartForm(32 << 20)
+	err = r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	f, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
