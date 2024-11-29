@@ -12,41 +12,41 @@ import (
 func main() {
 	// Get run args
 	if len(os.Args) < 2 {
-		println("No config file set")
+		fmt.Printf("No config file set\n")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
 
 	// Setup machine config
-	fmt.Println("Loading configuration")
+	fmt.Printf("Loading configuration from %s\n", configPath)
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		println("Error while reading config file:", err)
+		fmt.Printf("Error while reading config file: %s\n", err.Error())
 		os.Exit(2)
 	}
 
-	// Creation of the mux
+	// Create the mux
 	mux := http.NewServeMux()
 
 	// Setup server routes
-	fmt.Println("Setting up routes")
-	SetupRoutes(cfg, mux)
+	fmt.Printf("Setting up routes\n")
+	setupRoutes(cfg, mux)
 
-	// Creation of the server
+	// Create the server
 	server := &http.Server{
 		Handler: mux,
 	}
 	ln, err := net.Listen("tcp", ":"+cfg.Server.Port)
 	if err != nil {
-		println("Error while assigning server port:", err)
+		fmt.Printf("Error while assigning server port: %s\n", err.Error())
 		os.Exit(3)
 	}
 
 	// Starting up
-	fmt.Println("Ready to listen incoming requests")
+	fmt.Printf("Ready to listen incoming requests\n")
 	server.Serve(ln)
 	if err != nil {
-		println("Error while starting up server:", err)
+		fmt.Printf("Error while starting up server: %s\n", err.Error())
 		os.Exit(4)
 	}
 }

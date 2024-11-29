@@ -8,7 +8,7 @@ import (
 )
 
 func InsertGauge(ctx context.Context, client string, data model.DataGauge) error {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -19,7 +19,7 @@ func InsertGauge(ctx context.Context, client string, data model.DataGauge) error
 		return err
 	}
 
-	// Insert of a document
+	// Insert the document
 	_, err = coll.InsertOne(ctx, data)
 
 	return err

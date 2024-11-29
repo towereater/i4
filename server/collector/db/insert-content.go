@@ -7,7 +7,7 @@ import (
 )
 
 func InsertContent(ctx context.Context, content model.UploadContent) error {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -16,7 +16,7 @@ func InsertContent(ctx context.Context, content model.UploadContent) error {
 		return err
 	}
 
-	// Insert of a document
+	// Insert the document
 	_, err = coll.InsertOne(ctx, content)
 
 	return err

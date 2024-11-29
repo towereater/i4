@@ -9,7 +9,7 @@ import (
 )
 
 func SelectMetadata(ctx context.Context, hash uint32) (*model.UploadMetadata, error) {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -18,7 +18,7 @@ func SelectMetadata(ctx context.Context, hash uint32) (*model.UploadMetadata, er
 		return nil, err
 	}
 
-	// Search for a document
+	// Search the document
 	var metadata model.UploadMetadata
 	err = coll.FindOne(ctx, bson.M{"hash": hash}).Decode(&metadata)
 

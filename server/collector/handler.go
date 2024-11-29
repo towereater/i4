@@ -16,14 +16,14 @@ func addConfigMiddleware(cfg config.Config, h http.HandlerFunc) http.HandlerFunc
 	})
 }
 
-func SetupRoutes(cfg config.Config, s *http.ServeMux) {
-	// Handles home path
+func setupRoutes(cfg config.Config, s *http.ServeMux) {
+	// Home path handler
 	s.HandleFunc("/", homeHandler)
 
-	// Handles data files API functions
+	// Upload metadata handler
 	s.HandleFunc("/uploads/metadata", addConfigMiddleware(cfg, metadataHandler))
 
-	// Handles data files API functions
+	// Upload content handler
 	s.HandleFunc(fmt.Sprintf("/uploads/content/{%s}", config.ContextHash),
 		addConfigMiddleware(cfg, contentByIdHandler))
 }

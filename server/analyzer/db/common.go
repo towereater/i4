@@ -10,16 +10,15 @@ import (
 )
 
 func getCollection(ctx context.Context, db string, coll string) (*mongo.Collection, error) {
-	// Extracting config
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
-	// Timeout setup
+	// Setup timeout
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(cfg.DB.Timeout)*time.Second)
 	defer cancel()
 
-	// Connection to the db
-	client, err := mongo.Connect(ctx,
-		options.Client().ApplyURI("mongodb://"+cfg.DB.Host))
+	// Connect to the db
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+cfg.DB.Host))
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 func SelectContent(ctx context.Context, hash uint32) (*model.UploadContent, error) {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -18,7 +18,7 @@ func SelectContent(ctx context.Context, hash uint32) (*model.UploadContent, erro
 		return nil, err
 	}
 
-	// Search for a document
+	// Search the document
 	var content model.UploadContent
 	err = coll.FindOne(ctx, bson.M{"hash": hash}).Decode(&content)
 

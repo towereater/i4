@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,23 +10,22 @@ import (
 	"analyzer/config"
 	"analyzer/db"
 	"analyzer/model"
-
-	"github.com/segmentio/kafka-go"
+	"analyzer/utils"
 )
 
 func main() {
 	// Get run args
 	if len(os.Args) < 2 {
-		println("No config file set")
+		fmt.Printf("No config file set\n")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
 
 	// Setup machine config
-	fmt.Println("Loading configuration")
+	fmt.Printf("Loading configuration from %s\n", configPath)
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		println("Error while reading config file:", err.Error())
+		fmt.Printf("Error while reading config file: %s\n", err.Error())
 		os.Exit(2)
 	}
 	ctx := context.WithValue(context.Background(), config.ContextConfig, cfg)
@@ -35,61 +33,57 @@ func main() {
 	// Main loop
 	for {
 		// Poll the queue for data
-		hash, client, err := unqueueContent(ctx)
+		hash, client, err := utils.UnqueueContent(ctx)
 		if err != nil {
-			println("Error while reading queued content:", err.Error())
+			fmt.Printf("Error while reading queue: %s\n", err.Error())
 			continue
 		}
 
-		// Get metadata from database
+		// Get metadata from db
 		metadata, err := db.SelectMetadata(ctx, hash)
 		if err != nil {
-			println("Error while reading from metadata db:", err.Error())
+			fmt.Printf("Error while reading metadata from db: %s\n", err.Error())
 			return
 		}
 
-		// Get content from database
+		// Get content from db
 		content, err := db.SelectContent(ctx, hash)
 		if err != nil {
-			println("Error while reading from content db:", err.Error())
+			fmt.Printf("Error while reading content from db: %s\n", err.Error())
 			continue
 		}
 
 		// Convert and split the content
 		data := strings.Split(string(content.Content), "\n")
-		fmt.Printf("data is: %+v\n", data)
 
-		// Save data to database
+		// Save data to db
 		for _, r := range data {
 			if r == "" {
 				continue
 			}
-			fmt.Printf("r is: %+v\n", r)
 
-			// Parsing of the content
+			// Convert the json to struct
 			var dataContent model.DataContent
 			err = json.Unmarshal([]byte(r), &dataContent)
 			if err != nil {
-				println("Error while converting data content to string:", err.Error())
+				fmt.Printf("Error while converting data content to string: %s\n", err.Error())
 				continue
 			}
 
-			fmt.Printf("dataContent is: %+v\n", dataContent)
-			fmt.Printf("dataContent.Content is: %+v\n", dataContent.Content)
 			jsonString, err := json.Marshal(dataContent.Content)
 			if err != nil {
-				println("Error while converting content to json:", err.Error())
+				fmt.Printf("Error while converting content to json: %s\n", err.Error())
 				continue
 			}
 
 			switch dataContent.Type {
-			// Content is a gauge
+			// Gauge data
 			case "GAU":
 				var gauge model.DataGauge
 				json.Unmarshal(jsonString, &gauge)
 				gauge.Machine = metadata.Machine
 				err = db.InsertGauge(ctx, client, gauge)
-			// Content is a interval
+			// Interval data
 			case "INT":
 				var interval model.DataInterval
 				json.Unmarshal(jsonString, &interval)
@@ -97,34 +91,8 @@ func main() {
 				err = db.InsertInterval(ctx, client, interval)
 			}
 			if err != nil {
-				println("Error while converting content to string:", err.Error())
+				fmt.Printf("Error while converting content to string: %s\n", err.Error())
 			}
 		}
 	}
-}
-
-func unqueueContent(ctx context.Context) (uint32, string, error) {
-	// Extract config
-	cfg := ctx.Value(config.ContextConfig).(config.Config)
-
-	// Create topic reader with timeout
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: cfg.Queue.Brokers,
-		GroupID: cfg.Queue.Uploads.Group,
-		Topic:   cfg.Queue.Uploads.Topic,
-	})
-	defer r.Close()
-
-	// Read the message from queue
-	m, err := r.ReadMessage(ctx)
-	if err != nil {
-		println("Error while reading queued content:", err.Error())
-		os.Exit(3)
-	}
-
-	// Convert the read value
-	hash := binary.LittleEndian.Uint32(m.Value[0:4])
-	client := string(m.Value[4:8])
-
-	return hash, client, r.Close()
 }

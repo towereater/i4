@@ -11,7 +11,7 @@ import (
 )
 
 func InsertMetadata(w http.ResponseWriter, r *http.Request) {
-	// Parsing of the request
+	// Parse the request
 	var req model.InsertMetadataInput
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -19,19 +19,14 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Computing file id
+	// Compute file id
 	h := make([]byte, 4)
 	binary.LittleEndian.PutUint32(h, req.FileHash)
 
 	hash := fnv.New32()
-	hash.Write([]byte("pass"))
-	hash.Write([]byte(req.Client))
-	hash.Write([]byte(req.Machine))
-	hash.Write([]byte(req.Timestamp))
-	hash.Write(h)
-	hash.Write([]byte("word"))
+	hash.Write([]byte(fmt.Sprintf("pass%s%s%s%sword", req.Client, req.Machine, req.Timestamp, string(h))))
 
-	// Generation of the metadata document
+	// Create the metadata document
 	metadata := model.UploadMetadata{
 		Client:    req.Client,
 		Machine:   req.Machine,
@@ -41,14 +36,14 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		Hash:      hash.Sum32(),
 	}
 
-	// Execution of the request
+	// Insert the metadata document
 	err = db.InsertMetadata(r.Context(), metadata)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Creation of the output object
+	// Prepare response output
 	urls := model.InsertMetadataOutputUrls{
 		UploadContent: fmt.Sprintf("%s/uploads/content/%d", r.Host, metadata.Hash),
 	}
@@ -57,7 +52,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		Urls: urls,
 	}
 
-	// Response output
+	// Write response output
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(output)

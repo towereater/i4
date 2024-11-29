@@ -7,7 +7,7 @@ import (
 )
 
 func InsertMetadata(ctx context.Context, metadata model.UploadMetadata) error {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -16,7 +16,7 @@ func InsertMetadata(ctx context.Context, metadata model.UploadMetadata) error {
 		return err
 	}
 
-	// Insert of a document
+	// Insert the document
 	_, err = coll.InsertOne(ctx, metadata)
 
 	return err

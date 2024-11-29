@@ -8,7 +8,7 @@ import (
 )
 
 func InsertInterval(ctx context.Context, client string, data model.DataInterval) error {
-	// Extract configuration from context
+	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
@@ -19,7 +19,7 @@ func InsertInterval(ctx context.Context, client string, data model.DataInterval)
 		return err
 	}
 
-	// Insert of a document
+	// Insert the document
 	_, err = coll.InsertOne(ctx, data)
 
 	return err
