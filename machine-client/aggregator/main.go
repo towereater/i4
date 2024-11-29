@@ -11,27 +11,33 @@ import (
 
 func main() {
 	// Get run args
+	fmt.Printf("Starting execution, arg params: %v\n", os.Args)
 	if len(os.Args) < 2 {
-		println("No config file set")
+		fmt.Printf("No config file set\n")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
 
 	// Setup machine config
-	fmt.Println("Loading configuration")
+	fmt.Printf("Loading configuration from %s\n", configPath)
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		println("Error while reading config file:", err)
+		fmt.Printf("Error while reading config file: %s\n", err.Error())
 		os.Exit(2)
 	}
 
-	//Elaboration caches
+	// Elaboration caches
 	dgpr646Cache := &dgpr646.Cache{}
 
-	//Main loop
+	// Main loop
 	for {
-		//dgpr646.Fetch()
-		dgpr646.Discover(cfg, cfg.Targets[0], dgpr646Cache)
+		for _, t := range cfg.Targets {
+			switch t.Machine {
+			case "DGPR646":
+				//dgpr646.Fetch()
+				dgpr646.Discover(cfg, t, dgpr646Cache)
+			}
+		}
 
 		//Choose a remote target and do rename + FTP + delete remote file
 		/*
@@ -48,7 +54,7 @@ func main() {
 			sent data to server
 		*/
 
-		//Wait some time
+		// Wait some time
 		r := rand.Float32()
 		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
 		time.Sleep(time.Duration(waitTime) * time.Second)

@@ -7,16 +7,18 @@
     },
     "targets": [
         {
-            "name": "machine-pressure",
+            "id": "0001",
             "machine": "DGPR646",
+            "netip": "machine-pressure",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",
             "file": "dgpr646*.txt"
         },
         {
-            "name": "machine-water",
-            "machine": "DGPW854",
+            "id": "0002",
+            "machine": "DGWL854",
+            "netip": "machine-water",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",
@@ -25,6 +27,7 @@
     ],
     "collector": {
         "host": "collector:12001",
+        "timeout": 5,
         "uploadMetadata": "/uploads/metadata"
     }
 }

@@ -13,45 +13,44 @@ var jobId int32
 
 func main() {
 	// Get run args
+	fmt.Printf("Starting execution, arg params: %v\n", os.Args)
 	if len(os.Args) < 2 {
-		println("No config file set")
+		fmt.Printf("No config file set\n")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
 
 	// Setup machine config
-	fmt.Println("Loading configuration")
+	fmt.Printf("Loading configuration from %s\n", configPath)
 	cfg, err := ReadConfig(configPath)
 	if err != nil {
-		println("Error while reading config file:", err)
+		fmt.Printf("Error while reading config file: %s\n", err.Error())
 		os.Exit(2)
 	}
 
-	//Setup machine with locals
+	// Setup machine with locals
 	jobStart = false
 
-	//Create loop
+	// Main loop
 	for {
 		if jobStart && rand.Intn(2) == 0 {
-			//Randomly generate pressure data
+			// Generate random pressure data
 			err = generatePressure(cfg)
 			if err != nil {
-				fmt.Println("Error while generating pressure data:", err)
-				os.Exit(4)
+				fmt.Printf("Error while generating pressure data: %s\n", err.Error())
 			}
 		} else {
-			//Randomly generate job start data if a job is not active
-			//Randomly generate job end data if a job is active
+			// Generate random job start data if a job is not active
+			// Generate random job end data if a job is active
 			err = generateJob(cfg)
 			if err != nil {
-				fmt.Println("Error while generating job data:", err)
-				os.Exit(4)
+				fmt.Printf("Error while generating job data: %s\n", err.Error())
 			}
 		}
 
-		//Randomly generate pressure and job errors
+		// Generate random pressure and job errors
 
-		//Wait some time
+		// Wait some time
 		r := rand.Float32()
 		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
 		time.Sleep(time.Duration(waitTime) * time.Second)
@@ -59,12 +58,12 @@ func main() {
 }
 
 func generatePressure(cfg Config) error {
-	//Generate random data
+	// Generate random data
 	r := rand.Float32()
 	pres := r*(cfg.Pressure.Max-cfg.Pressure.Min) + cfg.Pressure.Min
 	datetime := time.Now().Format(time.DateTime)
 
-	//Open output file
+	// Open output file
 	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
@@ -72,45 +71,39 @@ func generatePressure(cfg Config) error {
 	defer f.Close()
 
 	//Write output file
-	output := fmt.Sprintf("%s, %s, %v\n", datetime, cfg.Pressure.Label, pres)
+	output := fmt.Sprintf("%s, %s, %f\n", datetime, cfg.Pressure.Label, pres)
 	fmt.Print(output)
 	_, err = f.WriteString(output)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func generateJob(cfg Config) error {
-	//Generate random data
+	// Generate random data
 	if !jobStart {
 		jobId = rand.Int31()
 	}
 	datetime := time.Now().Format(time.DateTime)
 
-	//Job status update
+	// Job status update
 	jobStart = !jobStart
 
-	//Open output file
+	// Open output file
 	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	//Write output file
+	// Write output file
 	var output string
 	if jobStart {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.Job.Start, jobId)
+		output = fmt.Sprintf("%s, %s, %d\n", datetime, cfg.Job.Start, jobId)
 	} else {
-		output = fmt.Sprintf("%s, %s, %v\n", datetime, cfg.Job.End, jobId)
+		output = fmt.Sprintf("%s, %s, %d\n", datetime, cfg.Job.End, jobId)
 	}
 	fmt.Print(output)
 	_, err = f.WriteString(output)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }

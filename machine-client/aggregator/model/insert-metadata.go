@@ -10,10 +10,8 @@ type InsertMetadataInput struct {
 }
 
 type InsertMetadataOutput struct {
-	Id   uint32                   `json:"id"`
-	Urls InsertMetadataOutputUrls `json:"urls"`
-}
-
-type InsertMetadataOutputUrls struct {
-	UploadContent string `json:"uploadContent"`
+	Id   uint32 `json:"id"`
+	Urls struct {
+		UploadContent string `json:"uploadContent"`
+	} `json:"urls"`
 }

@@ -16,94 +16,115 @@ import (
 )
 
 func Discover(cfg config.Config, target model.Target, cache *Cache) {
-	//Searches for all files with the given pattern
+	// Search for all files with the given pattern
 	files, err := fs.Glob(os.DirFS(cfg.FileDir), target.File)
 	if err != nil {
-		fmt.Printf("Error while searching %s files: %v", target.File, err)
+		fmt.Printf("Error while searching files with pattern %s: %s\n", target.File, err.Error())
 		return
 	}
 
-	//Elaborates all files which were found
+	// Elaborate all found files
 	for _, f := range files {
-		//Open input file connection
+		// Open input file connection
 		inputPath := path.Join(cfg.FileDir, f)
 		inputFile, err := os.Open(inputPath)
 		if err != nil {
-			fmt.Printf("Error while opening input file %s: %v\n", f, err)
+			fmt.Printf("Error while opening input file %s: %s\n", inputPath, err.Error())
 			continue
 		}
 		defer inputFile.Close()
 
-		//Open output file connection
+		// Open output file connection
 		outputPath := path.Join(cfg.FileDir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
 		outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			fmt.Printf("Error while opening or creating output file %s: %v\n", f, err)
+			fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
 			continue
 		}
 		defer outputFile.Close()
 
-		//Elaborates given file
+		// Elaborate given file
 		err = elaborate(inputFile, outputFile, cache)
 
-		//If an error occurred, the file is renamed to block next elaborations
-		if err != nil {
-			timestamp := time.Now().Format(time.DateTime)
-			os.Rename(inputPath, path.Join(cfg.FileDir, fmt.Sprintf("ERROR %v %v", timestamp, f)))
-			os.Remove(outputPath)
+		// Send data to queue if no error occurred
+		// Rename file to block next elaborations if an error occurred
+		if err == nil {
+			err = utils.SendFile(cfg, outputPath, target.Machine)
+			if err != nil {
+				fmt.Printf("Error while sending file %s to queue: %s\n", outputPath, err.Error())
+				continue
+			}
 		} else {
-			utils.SendFile(cfg, outputPath, target.Machine)
+			timestamp := time.Now().Format(time.DateTime)
+			os.Rename(inputPath, path.Join(cfg.FileDir, fmt.Sprintf("error-%s-%s", timestamp, f)))
+			os.Remove(outputPath)
 		}
 	}
 }
 
 func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
-	var content *model.DataContent
-	var job *model.DataGauge
-
-	//Read file line by line and split each one
+	// Read file lines and split them
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		// Addional elaboration data
+		var content *model.DataContent
+		var job *model.DataGauge
+		var err error
+
 		data := strings.Split(scanner.Text(), ", ")
 
 		// Format and convert data
 		switch data[1] {
 		case "PRESSURE":
-			content = formatPressure(data)
+			content, err = formatPressure(data)
 		case "JOBSTART":
-			content, job = formatJob(data)
-			cache.Job = job
+			content, job, err = formatJob(data)
+			if err == nil {
+				cache.Job = job
+			}
 		case "JOBEND":
-			content, job = formatJob(data)
+			content, job, err = formatJob(data)
 		default:
-			continue
+			fmt.Printf("Unrecognized data record, discarded: %s\n", data[1])
+			return fmt.Errorf("unrecognized data record")
+		}
+		if err == nil {
+			return nil
 		}
 
 		// Save data to file
 		jsonByte, err := json.Marshal(content)
 		if err != nil {
-			fmt.Printf("Error while converting content: %v\n", err)
-			continue
+			fmt.Printf("Error while marshaling data gauge: %s\n", err.Error())
+			return err
 		}
-		fmt.Fprintf(outputFile, "%v\n", string(jsonByte))
+		fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
 
-		// Addional elaborations for job interval
+		// Elaborate interval if job end is recognized
 		if data[1] == "JOBEND" && cache.Job != nil && job != nil && cache.Job.Value == job.Value {
 			content = formatJobInterval(*cache.Job, *job)
-			jsonByte, _ = json.Marshal(content)
-			fmt.Fprintf(outputFile, "%v\n", string(jsonByte))
+			jsonByte, err = json.Marshal(content)
+			if err != nil {
+				fmt.Printf("Error while marshaling data interval: %s\n", err.Error())
+				return err
+			}
+			fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
 		}
 	}
 
 	return nil
 }
 
-func formatPressure(data []string) *model.DataContent {
+func formatPressure(data []string) (*model.DataContent, error) {
+	if len(data) < 1 {
+		fmt.Printf("Invalid %s data record, discarded: %v\n", data[1], data)
+		return nil, fmt.Errorf("invalid %s data record", data[1])
+	}
+
 	value, err := strconv.ParseFloat(data[2], 32)
 	if err != nil {
-		fmt.Printf("Error while working:\nData:%v\nError:%v\n", data, err)
-		return nil
+		fmt.Printf("Invalid %s data record, discarded: %s\n", data[1], err.Error())
+		return nil, fmt.Errorf("invalid %s data record", data[1])
 	}
 
 	m := model.DataGauge{
@@ -115,10 +136,15 @@ func formatPressure(data []string) *model.DataContent {
 	return &model.DataContent{
 		Type:    "GAU",
 		Content: m,
-	}
+	}, nil
 }
 
-func formatJob(data []string) (*model.DataContent, *model.DataGauge) {
+func formatJob(data []string) (*model.DataContent, *model.DataGauge, error) {
+	if len(data) < 2 {
+		fmt.Printf("Invalid %s data record, discarded: %v\n", data[1], data)
+		return nil, nil, fmt.Errorf("invalid %s data record", data[1])
+	}
+
 	m := model.DataGauge{
 		Timestamp: data[0],
 		Key:       data[1],
@@ -128,7 +154,7 @@ func formatJob(data []string) (*model.DataContent, *model.DataGauge) {
 	return &model.DataContent{
 		Type:    "GAU",
 		Content: m,
-	}, &m
+	}, &m, nil
 }
 
 func formatJobInterval(jobStart model.DataGauge, jobEnd model.DataGauge) *model.DataContent {

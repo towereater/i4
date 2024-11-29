@@ -17,6 +17,7 @@ type Config struct {
 	Targets   []model.Target `json:"targets"`
 	Collector struct {
 		Host           string `json:"host"`
+		Timeout        int    `json:"timeout"`
 		UploadMetadata string `json:"uploadMetadata"`
 	} `json:"collector"`
 }
