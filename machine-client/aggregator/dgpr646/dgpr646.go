@@ -51,10 +51,12 @@ func Discover(cfg config.Config, target model.Target, cache *Cache) {
 		if err == nil {
 			err = utils.SendFile(cfg, outputPath, target.Machine)
 			if err != nil {
-				fmt.Printf("Error while sending file %s to queue: %s\n", outputPath, err.Error())
+				fmt.Printf("Error while sending file %s to server: %s\n", outputPath, err.Error())
 				continue
 			}
 		} else {
+			fmt.Printf("Error while elaborating file %s: %s\n", outputPath, err.Error())
+
 			timestamp := time.Now().Format(time.DateTime)
 			os.Rename(inputPath, path.Join(cfg.FileDir, fmt.Sprintf("error-%s-%s", timestamp, f)))
 			os.Remove(outputPath)
@@ -85,17 +87,15 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 		case "JOBEND":
 			content, job, err = formatJob(data)
 		default:
-			fmt.Printf("Unrecognized data record, discarded: %s\n", data[1])
-			return fmt.Errorf("unrecognized data record")
+			return fmt.Errorf("unrecognized data record: %s", data[1])
 		}
-		if err == nil {
-			return nil
+		if err != nil {
+			return err
 		}
 
 		// Save data to file
 		jsonByte, err := json.Marshal(content)
 		if err != nil {
-			fmt.Printf("Error while marshaling data gauge: %s\n", err.Error())
 			return err
 		}
 		fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
@@ -105,7 +105,6 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 			content = formatJobInterval(*cache.Job, *job)
 			jsonByte, err = json.Marshal(content)
 			if err != nil {
-				fmt.Printf("Error while marshaling data interval: %s\n", err.Error())
 				return err
 			}
 			fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
@@ -117,13 +116,11 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 
 func formatPressure(data []string) (*model.DataContent, error) {
 	if len(data) < 1 {
-		fmt.Printf("Invalid %s data record, discarded: %v\n", data[1], data)
 		return nil, fmt.Errorf("invalid %s data record", data[1])
 	}
 
 	value, err := strconv.ParseFloat(data[2], 32)
 	if err != nil {
-		fmt.Printf("Invalid %s data record, discarded: %s\n", data[1], err.Error())
 		return nil, fmt.Errorf("invalid %s data record", data[1])
 	}
 
@@ -141,7 +138,6 @@ func formatPressure(data []string) (*model.DataContent, error) {
 
 func formatJob(data []string) (*model.DataContent, *model.DataGauge, error) {
 	if len(data) < 2 {
-		fmt.Printf("Invalid %s data record, discarded: %v\n", data[1], data)
 		return nil, nil, fmt.Errorf("invalid %s data record", data[1])
 	}
 

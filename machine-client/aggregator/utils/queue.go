@@ -26,18 +26,18 @@ func SendFile(cfg config.Config, path string, machine string) error {
 	return err
 }
 
-func uploadMetadata(cfg config.Config, path string, machine string) (*model.InsertMetadataOutput, error) {
+func uploadMetadata(cfg config.Config, path string, machine string) (model.InsertMetadataOutput, error) {
 	// Open file connection
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return model.InsertMetadataOutput{}, err
 	}
 	defer f.Close()
 
 	// Retrieve file data
 	fi, err := f.Stat()
 	if err != nil {
-		return nil, err
+		return model.InsertMetadataOutput{}, err
 	}
 
 	// Compute request data
@@ -47,7 +47,7 @@ func uploadMetadata(cfg config.Config, path string, machine string) (*model.Inse
 	hash := fnv.New32()
 	_, err = io.Copy(hash, f)
 	if err != nil {
-		return nil, err
+		return model.InsertMetadataOutput{}, err
 	}
 
 	// Construct the request
@@ -64,13 +64,13 @@ func uploadMetadata(cfg config.Config, path string, machine string) (*model.Inse
 	// Execute the request
 	res, err := executeHttpRequest(cfg, http.MethodPost, url, metadataInput)
 	if err != nil {
-		return nil, err
+		return model.InsertMetadataOutput{}, err
 	}
 	defer res.Body.Close()
 
 	// Parse of the request
-	var metadataOutput *model.InsertMetadataOutput
-	err = json.NewDecoder(res.Body).Decode(metadataOutput)
+	var metadataOutput model.InsertMetadataOutput
+	err = json.NewDecoder(res.Body).Decode(&metadataOutput)
 
 	return metadataOutput, err
 }
@@ -85,7 +85,6 @@ func uploadMultiform(cfg config.Config, path string, contentUrl string) error {
 	if err != nil {
 		return err
 	}
-	writer.Close()
 
 	// Open file connection
 	f, err := os.Open(path)
@@ -94,10 +93,12 @@ func uploadMultiform(cfg config.Config, path string, contentUrl string) error {
 	}
 	defer f.Close()
 
+	// Write data on multiform file
 	_, err = io.Copy(part, f)
 	if err != nil {
 		return err
 	}
+	writer.Close()
 
 	// Construct the request
 	url := "http://" + contentUrl

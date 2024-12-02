@@ -4,6 +4,7 @@ import (
 	"aggregator/config"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -14,6 +15,7 @@ func executeHttpRequest(cfg config.Config, method string, url string, payload an
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Data to send is: %s\n", string(jsonByte))
 
 	// Construct the request
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonByte))
@@ -23,7 +25,7 @@ func executeHttpRequest(cfg config.Config, method string, url string, payload an
 
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{
-		Timeout: time.Duration(cfg.Collector.Timeout),
+		Timeout: time.Duration(cfg.Collector.Timeout) * time.Second,
 	}
 
 	// Execute the request
@@ -39,7 +41,7 @@ func executeHttpFormFile(cfg config.Config, method string, url string, buf bytes
 
 	req.Header.Add("Content-Type", content)
 	client := &http.Client{
-		Timeout: time.Duration(cfg.Collector.Timeout),
+		Timeout: time.Duration(cfg.Collector.Timeout) * time.Second,
 	}
 
 	// Execute the request
