@@ -11,7 +11,8 @@ services:
     ports:
       - "12001:12001"
     networks:
-      - back-tier
+      - db-net
+      - queue-net
 
   analyzer:
     build: ./analyzer
@@ -19,7 +20,8 @@ services:
       kafka:
         condition: service_healthy
     networks:
-      - back-tier
+      - db-net
+      - queue-net
   
   kafka:
     image: apache/kafka:3.8.0
@@ -34,7 +36,7 @@ services:
     expose:
       - "9092"
     networks:
-      - back-tier
+      - queue-net
   
   init-kafka:
     image: apache/kafka:3.8.0
@@ -49,7 +51,7 @@ services:
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
     networks:
-      - back-tier
+      - queue-net
 
   mongo:
     image: mongo:7.0.2
@@ -67,8 +69,9 @@ services:
       #- /Users/andnic/Documents/mongo-data-i4:/etc/mongo-data
       - ./mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
-      - back-tier
+      - db-net
     #command: ["mongod", "--dbpath", "/etc/mongo-data"]
 
 networks:
-  back-tier: {}
+  db-net: {}
+  queue-net: {}
