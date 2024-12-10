@@ -34,7 +34,8 @@ func main() {
 		for _, t := range cfg.Targets {
 			switch t.Machine {
 			case "DGPR646":
-				//dgpr646.Fetch()
+				dgpr646.Fetch(cfg, t)
+				continue
 				dgpr646.Discover(cfg, t, dgpr646Cache)
 			}
 		}

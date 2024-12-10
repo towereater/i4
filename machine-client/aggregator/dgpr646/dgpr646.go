@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+func Fetch(cfg config.Config, target model.Target) error {
+	return utils.ConnectSsh(target.NetIp, target.User, target.Pass)
+}
+
 func Discover(cfg config.Config, target model.Target, cache *Cache) {
 	// Search for all files with the given pattern
 	files, err := fs.Glob(os.DirFS(cfg.FileDir), target.File)

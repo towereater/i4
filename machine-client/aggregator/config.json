@@ -9,7 +9,7 @@
         {
             "id": "0001",
             "machine": "DGPR646",
-            "netip": "machine-pressure",
+            "netip": "machine-pressure:22",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",
@@ -18,7 +18,7 @@
         {
             "id": "0002",
             "machine": "DGWL854",
-            "netip": "machine-water",
+            "netip": "machine-water:22",
             "user": "ssh-user",
             "pass": "passwd",
             "folder": "/app/data",
