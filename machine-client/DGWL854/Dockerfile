@@ -8,9 +8,9 @@ WORKDIR /app
 
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /main
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 22
 
-#ENTRYPOINT service ssh start && /main
-ENTRYPOINT ["service", "ssh", "start", "&&", "/main"]
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["./config.json"]

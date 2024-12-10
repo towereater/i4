@@ -13,10 +13,12 @@ services:
     networks:
       - mach-tier
   
-  #aggregator:
-  #  build: ./aggregator
-  #  networks:
-  #    - mach-tier
+  aggregator:
+    build: ./aggregator
+    depends_on:
+      - machine-water
+    networks:
+      - mach-tier
 
 networks:
   mach-tier: {}
