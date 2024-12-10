@@ -16,7 +16,7 @@ import (
 )
 
 func Fetch(cfg config.Config, target model.Target) error {
-	return utils.ConnectSsh(target.NetIp, target.User, target.Pass)
+	return utils.ConnectSsh(target.NetIp, target.User, target.Pass, target.Folder)
 }
 
 func Discover(cfg config.Config, target model.Target, cache *Cache) {

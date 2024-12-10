@@ -1,12 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 
 	"golang.org/x/crypto/ssh"
 )
 
-func ConnectSsh(host string, user string, pass string) error {
+func ConnectSsh(host string, user string, pass string, folder string) error {
 	clientConfig := &ssh.ClientConfig{
 		User: user,
 		Auth: []ssh.AuthMethod{
@@ -39,15 +40,7 @@ func ConnectSsh(host string, user string, pass string) error {
 	session.Stdin = os.Stdin
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
-	err = session.Shell()
-	if err != nil {
-		return err
-	}
+	err = session.Run(fmt.Sprintf("ls %s -la", folder))
 
-	err = session.Wait()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

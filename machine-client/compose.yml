@@ -16,6 +16,7 @@ services:
   aggregator:
     build: ./aggregator
     depends_on:
+      - machine-pressure
       - machine-water
     networks:
       - mach-tier
