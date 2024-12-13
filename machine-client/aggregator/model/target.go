@@ -6,6 +6,5 @@ type Target struct {
 	NetIp   string `json:"netip"`
 	User    string `json:"user"`
 	Pass    string `json:"pass"`
-	Folder  string `json:"folder"`
 	File    string `json:"file"`
 }
