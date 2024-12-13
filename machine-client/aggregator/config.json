@@ -1,5 +1,5 @@
 {
-    "fileDir": "./data/",
+    "fileDir": "./data",
     "client": "0001",
     "waitTime": {
         "max": 15.0,
@@ -12,8 +12,7 @@
             "netip": "machine-pressure:22",
             "user": "ssh-user",
             "pass": "passwd",
-            "folder": "/app/data/dgpr646.txt",
-            "file": "dgpr646*.txt"
+            "file": "/app/data/dgpr646.txt"
         },
         {
             "id": "0002",
@@ -21,8 +20,7 @@
             "netip": "machine-water:22",
             "user": "ssh-user",
             "pass": "passwd",
-            "folder": "/app/data/dgwl854.txt",
-            "file": "dgwl854*.txt"
+            "file": "/app/data/dgwl854.txt"
         }
     ],
     "collector": {
