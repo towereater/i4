@@ -1,32 +1,17 @@
 package dgpr646
 
 import (
-	"aggregator/config"
 	"aggregator/model"
-	"aggregator/utils"
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"os"
-	"path"
 	"strconv"
 	"strings"
-	"time"
 )
 
-func Fetch(cfg config.Config, target model.Target) error {
-	err := utils.ConnectSsh(target.NetIp, target.User, target.Pass, target.Folder)
-
-	if err != nil {
-		fmt.Printf("Error while fetching remote files: %s\n", err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func Discover(cfg config.Config, target model.Target, cache *Cache) {
+/*
+func Elaborate(cfg config.Config, target model.Target, cache *Cache) {
 	// Search for all files with the given pattern
 	files, err := fs.Glob(os.DirFS(cfg.FileDir), target.File)
 	if err != nil {
@@ -74,10 +59,11 @@ func Discover(cfg config.Config, target model.Target, cache *Cache) {
 		}
 	}
 }
+*/
 
-func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
+func Elaborate(input *os.File, output *os.File, cache *Cache) error {
 	// Read file lines and split them
-	scanner := bufio.NewScanner(inputFile)
+	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		// Addional elaboration data
 		var content *model.DataContent
@@ -109,7 +95,7 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
+		fmt.Fprintf(output, "%s\n", string(jsonByte))
 
 		// Elaborate interval if job end is recognized
 		if data[1] == "JOBEND" && cache.Job != nil && job != nil && cache.Job.Value == job.Value {
@@ -118,7 +104,7 @@ func elaborate(inputFile *os.File, outputFile *os.File, cache *Cache) error {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(outputFile, "%s\n", string(jsonByte))
+			fmt.Fprintf(output, "%s\n", string(jsonByte))
 		}
 	}
 

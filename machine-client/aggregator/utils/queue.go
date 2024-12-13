@@ -14,26 +14,19 @@ import (
 	"time"
 )
 
-func SendFile(cfg config.Config, path string, machine string) error {
+func SendFile(cfg config.Config, f *os.File, machine string) error {
 	// Send file metadata
-	metadataOutput, err := uploadMetadata(cfg, path, machine)
+	metadataOutput, err := uploadMetadata(cfg, f, machine)
 	if err != nil {
 		return err
 	}
 
 	// Send file
-	err = uploadMultiform(cfg, path, metadataOutput.Urls.UploadContent)
+	err = uploadMultiform(cfg, f, metadataOutput.Urls.UploadContent)
 	return err
 }
 
-func uploadMetadata(cfg config.Config, path string, machine string) (model.InsertMetadataOutput, error) {
-	// Open file connection
-	f, err := os.Open(path)
-	if err != nil {
-		return model.InsertMetadataOutput{}, err
-	}
-	defer f.Close()
-
+func uploadMetadata(cfg config.Config, f *os.File, machine string) (model.InsertMetadataOutput, error) {
 	// Retrieve file data
 	fi, err := f.Stat()
 	if err != nil {
@@ -75,23 +68,16 @@ func uploadMetadata(cfg config.Config, path string, machine string) (model.Inser
 	return metadataOutput, err
 }
 
-func uploadMultiform(cfg config.Config, path string, contentUrl string) error {
+func uploadMultiform(cfg config.Config, f *os.File, contentUrl string) error {
 	// Create multiform file
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 	defer writer.Close()
 
-	part, err := writer.CreateFormFile("file", filepath.Base(path))
+	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
 	if err != nil {
 		return err
 	}
-
-	// Open file connection
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
 
 	// Write data on multiform file
 	_, err = io.Copy(part, f)

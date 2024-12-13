@@ -3,9 +3,11 @@ package main
 import (
 	"aggregator/config"
 	"aggregator/dgpr646"
+	"aggregator/utils"
 	"fmt"
 	"math/rand"
 	"os"
+	"path"
 	"time"
 )
 
@@ -32,28 +34,44 @@ func main() {
 	// Main loop
 	for {
 		for _, t := range cfg.Targets {
+			// Output file name
+			//CHANGE FILE NAME
+			outputPath := path.Join(cfg.FileDir, fmt.Sprintf("output-%s.txt", t.Machine))
+
+			//CHECK IF ANY FILE IS ALREADY THERE AND ELABORATE IT
+			//CYCLE THROUGH LOCAL FILES WITH CORRECT NAME
+
+			// Open output file
+			output, err := utils.CreateOrReplaceFile(outputPath)
+			if err != nil {
+				fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
+				continue
+			}
+
+			// Download data file from remote host
+			input, err := utils.GetFileFromRemote(cfg, t)
+			if err != nil {
+				fmt.Printf("Error while fetching file from remote %s: %s\n", t.NetIp, err.Error())
+				continue
+			}
+
+			// Elaborate data file depending on machine type
 			switch t.Machine {
 			case "DGPR646":
-				dgpr646.Fetch(cfg, t)
+				err = dgpr646.Elaborate(input, output, dgpr646Cache)
+			}
+			if err != nil {
+				fmt.Printf("Error while elaborating file %s: %s\n", input.Name(), err.Error())
 				continue
-				dgpr646.Discover(cfg, t, dgpr646Cache)
+			}
+
+			// Send file to server
+			err = utils.SendFile(cfg, output, t.Machine)
+			if err != nil {
+				fmt.Printf("Error while sending file %s to server: %s\n", output.Name(), err.Error())
+				continue
 			}
 		}
-
-		//Choose a remote target and do rename + FTP + delete remote file
-		/*
-			foreach config target ssh-connect to it using name, user, pass
-			check folder for files
-			ftp all files and remove them from remote
-			load local start-stop
-			elaborate them
-		*/
-
-		//File sent to remote DB
-		/*
-			request data save to server
-			sent data to server
-		*/
 
 		// Wait some time
 		r := rand.Float32()
