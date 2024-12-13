@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -37,10 +37,18 @@ func ConnectSsh(host string, user string, pass string, folder string) error {
 		return err
 	}
 
-	session.Stdin = os.Stdin
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
-	err = session.Run(fmt.Sprintf("ls %s -la", folder))
+	var buffer bytes.Buffer
+	session.Stdout = &buffer
 
-	return err
+	fmt.Printf("Running commands\n")
+	err = session.Run(fmt.Sprintf("cat %s; rm %s", folder, folder))
+
+	if err != nil {
+		fmt.Printf("Got an error while executing: %s", err.Error())
+		return err
+	}
+
+	fmt.Printf("cat function returned:\n%s\nprint ended", buffer.String())
+
+	return nil
 }

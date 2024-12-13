@@ -12,7 +12,7 @@
             "netip": "machine-pressure:22",
             "user": "ssh-user",
             "pass": "passwd",
-            "folder": "/app/data",
+            "folder": "/app/data/dgpr646.txt",
             "file": "dgpr646*.txt"
         },
         {
@@ -21,7 +21,7 @@
             "netip": "machine-water:22",
             "user": "ssh-user",
             "pass": "passwd",
-            "folder": "/app/data",
+            "folder": "/app/data/dgwl854.txt",
             "file": "dgwl854*.txt"
         }
     ],

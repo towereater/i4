@@ -16,7 +16,14 @@ import (
 )
 
 func Fetch(cfg config.Config, target model.Target) error {
-	return utils.ConnectSsh(target.NetIp, target.User, target.Pass, target.Folder)
+	err := utils.ConnectSsh(target.NetIp, target.User, target.Pass, target.Folder)
+
+	if err != nil {
+		fmt.Printf("Error while fetching remote files: %s\n", err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func Discover(cfg config.Config, target model.Target, cache *Cache) {
