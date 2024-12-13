@@ -1,3 +1,3 @@
 #!/bin/sh
 service ssh start
-/main $1
+exec /main $@

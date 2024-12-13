@@ -8,7 +8,7 @@ WORKDIR /app
 
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /main
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh && chmod u+w ./data
 
 EXPOSE 22
 
