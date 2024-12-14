@@ -1,6 +1,8 @@
 package main
 
 import (
+	"dgwl854/config"
+	"dgwl854/utils"
 	"fmt"
 	"math/rand"
 	"os"
@@ -26,7 +28,7 @@ func main() {
 
 	// Setup machine config
 	fmt.Printf("Loading configuration from %s\n", configPath)
-	cfg, err := ReadConfig(configPath)
+	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
 		fmt.Printf("Error while reading config file: %s\n", err.Error())
 		os.Exit(2)
@@ -69,14 +71,14 @@ func main() {
 	}
 }
 
-func generateWaterLevel(cfg Config) error {
+func generateWaterLevel(cfg config.Config) error {
 	// Generate random data
 	r := rand.Float32()
 	water := r*(cfg.WaterLevel.Max-cfg.WaterLevel.Min) + cfg.WaterLevel.Min
 	datetime := time.Now().Format(time.DateTime)
 
 	// Open output file
-	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := utils.CreateOrAppendFile(cfg.FilePath)
 	if err != nil {
 		return err
 	}
@@ -90,7 +92,7 @@ func generateWaterLevel(cfg Config) error {
 	return err
 }
 
-func generateJob(cfg Config) error {
+func generateJob(cfg config.Config) error {
 	// Generate random data
 	if !jobStart {
 		jobId = rand.Int31()
@@ -101,7 +103,7 @@ func generateJob(cfg Config) error {
 	jobStart = !jobStart
 
 	// Open output file
-	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := utils.CreateOrAppendFile(cfg.FilePath)
 	if err != nil {
 		return err
 	}
@@ -120,7 +122,7 @@ func generateJob(cfg Config) error {
 	return err
 }
 
-func generateUserLog(cfg Config) error {
+func generateUserLog(cfg config.Config) error {
 	// Generate random data
 	if !userLogged {
 		userId = rand.Int31()
@@ -131,7 +133,7 @@ func generateUserLog(cfg Config) error {
 	userLogged = !userLogged
 
 	// Open output file
-	f, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := utils.CreateOrAppendFile(cfg.FilePath)
 	if err != nil {
 		return err
 	}
