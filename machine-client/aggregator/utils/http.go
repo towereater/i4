@@ -4,7 +4,6 @@ import (
 	"aggregator/config"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -15,7 +14,6 @@ func executeHttpRequest(cfg config.Config, method string, url string, payload an
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Data to send is: %s\n", string(jsonByte))
 
 	// Construct the request
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonByte))

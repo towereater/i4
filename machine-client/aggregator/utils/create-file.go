@@ -5,6 +5,21 @@ import (
 	"path"
 )
 
+func CreateFile(filepath string) (*os.File, error) {
+	// Create of chmod main directory
+	dirPath := path.Dir(filepath)
+	_, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(dirPath, 0777)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Create file
+	return os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY, 0666)
+}
+
 func CreateOrReplaceFile(filepath string) (*os.File, error) {
 	// Create of chmod main directory
 	dirPath := path.Dir(filepath)

@@ -10,57 +10,6 @@ import (
 	"strings"
 )
 
-/*
-func Elaborate(cfg config.Config, target model.Target, cache *Cache) {
-	// Search for all files with the given pattern
-	files, err := fs.Glob(os.DirFS(cfg.FileDir), target.File)
-	if err != nil {
-		fmt.Printf("Error while searching files with pattern %s: %s\n", target.File, err.Error())
-		return
-	}
-
-	// Elaborate all found files
-	for _, f := range files {
-		// Open input file connection
-		inputPath := path.Join(cfg.FileDir, f)
-		inputFile, err := os.Open(inputPath)
-		if err != nil {
-			fmt.Printf("Error while opening input file %s: %s\n", inputPath, err.Error())
-			continue
-		}
-		defer inputFile.Close()
-
-		// Open output file connection
-		outputPath := path.Join(cfg.FileDir, "elab-"+f[0:strings.LastIndex(f, ".")]+".txt")
-		outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
-			continue
-		}
-		defer outputFile.Close()
-
-		// Elaborate given file
-		err = elaborate(inputFile, outputFile, cache)
-
-		// Send data to queue if no error occurred
-		// Rename file to block next elaborations if an error occurred
-		if err == nil {
-			err = utils.SendFile(cfg, outputPath, target.Machine)
-			if err != nil {
-				fmt.Printf("Error while sending file %s to server: %s\n", outputPath, err.Error())
-				continue
-			}
-		} else {
-			fmt.Printf("Error while elaborating file %s: %s\n", outputPath, err.Error())
-
-			timestamp := time.Now().Format(time.DateTime)
-			os.Rename(inputPath, path.Join(cfg.FileDir, fmt.Sprintf("error-%s-%s", timestamp, f)))
-			os.Remove(outputPath)
-		}
-	}
-}
-*/
-
 func Elaborate(input *os.File, output *os.File, cache *Cache) error {
 	// Read file lines and split them
 	scanner := bufio.NewScanner(input)

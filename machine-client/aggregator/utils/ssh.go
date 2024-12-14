@@ -5,12 +5,12 @@ import (
 	"aggregator/model"
 	"fmt"
 	"os"
-	"path"
 
 	"golang.org/x/crypto/ssh"
 )
 
-func GetFileFromRemote(cfg config.Config, t model.Target) (*os.File, error) {
+func GetDataFromRemote(cfg config.Config, t model.Target, outputPath string) error {
+	// Create ssh config
 	clientConfig := &ssh.ClientConfig{
 		User: t.User,
 		Auth: []ssh.AuthMethod{
@@ -19,26 +19,30 @@ func GetFileFromRemote(cfg config.Config, t model.Target) (*os.File, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
+	// Connect to host
 	client, err := ssh.Dial("tcp", t.NetIp, clientConfig)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer client.Close()
 
 	session, err := client.NewSession()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer session.Close()
 
-	f, err := CreateOrReplaceFile(path.Join(cfg.FileDir, fmt.Sprintf("%s-%s", t.Id, t.Machine)))
+	// Prepare output file
+	f, err := CreateOrReplaceFile(outputPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer f.Close()
 
+	// Run ssh command
 	session.Stdout = f
 	session.Stdin = os.Stdin
 	session.Stderr = os.Stderr
 
-	err = session.Run(fmt.Sprintf("cat %s; rm -f %s", t.File, t.File))
-	return f, err
+	return session.Run(fmt.Sprintf("cat %s; rm -f %s", t.File, t.File))
 }

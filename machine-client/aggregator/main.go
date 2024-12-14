@@ -5,9 +5,11 @@ import (
 	"aggregator/dgpr646"
 	"aggregator/utils"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -33,42 +35,106 @@ func main() {
 
 	// Main loop
 	for {
+		// Download data files from all remote hosts
 		for _, t := range cfg.Targets {
-			// Output file name
-			//CHANGE FILE NAME
-			outputPath := path.Join(cfg.FileDir, fmt.Sprintf("output-%s.txt", t.Machine))
-
-			//CHECK IF ANY FILE IS ALREADY THERE AND ELABORATE IT
-			//CYCLE THROUGH LOCAL FILES WITH CORRECT NAME
-
-			// Open output file
-			output, err := utils.CreateOrReplaceFile(outputPath)
-			if err != nil {
-				fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
-				continue
-			}
+			// Prepare output file name
+			timestamp := time.Now().Format(time.DateTime)
+			outputPath := path.Join(cfg.FileDir, fmt.Sprintf("dwn-%s-%s-%s.txt", t.Id, t.Machine, timestamp))
 
 			// Download data file from remote host
-			input, err := utils.GetFileFromRemote(cfg, t)
+			err = utils.GetDataFromRemote(cfg, t, outputPath)
 			if err != nil {
 				fmt.Printf("Error while fetching file from remote %s: %s\n", t.NetIp, err.Error())
 				continue
 			}
+		}
 
-			// Elaborate data file depending on machine type
-			switch t.Machine {
-			case "DGPR646":
-				err = dgpr646.Elaborate(input, output, dgpr646Cache)
-			}
-			if err != nil {
-				fmt.Printf("Error while elaborating file %s: %s\n", input.Name(), err.Error())
+		// Search for all files to elaborate
+		files, err := fs.Glob(os.DirFS(cfg.FileDir), "dwn-*.txt")
+		if err != nil {
+			fmt.Printf("Error while searching files to elaborate: %s\n", err.Error())
+			return
+		}
+
+		// Elaborate all found files
+		for _, f := range files {
+			// Get file metadata from file name
+			metadata := strings.Split(f, "-")
+			if len(metadata) < 4 {
+				fmt.Printf("File name %s does not match name pattern\n", f)
 				continue
 			}
+			machine := metadata[2]
+
+			// Open input file
+			inputPath := path.Join(cfg.FileDir, f)
+			inputFile, err := os.Open(inputPath)
+			if err != nil {
+				fmt.Printf("Error while opening input file %s: %s\n", inputPath, err.Error())
+				continue
+			}
+			defer inputFile.Close()
+
+			// Open output file
+			outputPath := path.Join(cfg.FileDir, fmt.Sprintf("elab-%s", f[4:]))
+			outputFile, err := utils.CreateFile(outputPath)
+			if err != nil {
+				fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
+				continue
+			}
+			defer outputFile.Close()
+
+			// Elaborate data file depending on machine type
+			switch machine {
+			case "DGPR646":
+				err = dgpr646.Elaborate(inputFile, outputFile, dgpr646Cache)
+			default:
+				err = fmt.Errorf("undefined machine type")
+			}
+			if err != nil {
+				// Rename broken file
+				inputFile.Close()
+				os.Rename(inputPath, fmt.Sprintf("err-%s", inputPath))
+
+				// Remove output file
+				outputFile.Close()
+				os.Remove(outputPath)
+
+				fmt.Printf("Error while elaborating file %s: %s\n", inputPath, err.Error())
+				continue
+			}
+		}
+
+		// Search for all files to send
+		files, err = fs.Glob(os.DirFS(cfg.FileDir), "elab-*.txt")
+		if err != nil {
+			fmt.Printf("Error while searching files to elaborate: %s\n", err.Error())
+			return
+		}
+
+		// Elaborate all found files
+		for _, f := range files {
+			// Get file metadata from file name
+			metadata := strings.Split(f, "-")
+			if len(metadata) < 4 {
+				fmt.Printf("File name %s does not match name pattern\n", f)
+				continue
+			}
+			machine := metadata[2]
+
+			// Open input file
+			inputPath := path.Join(cfg.FileDir, f)
+			inputFile, err := os.Open(inputPath)
+			if err != nil {
+				fmt.Printf("Error while opening input file %s: %s\n", inputPath, err.Error())
+				continue
+			}
+			defer inputFile.Close()
 
 			// Send file to server
-			err = utils.SendFile(cfg, output, t.Machine)
+			err = utils.SendFile(cfg, inputFile, machine)
 			if err != nil {
-				fmt.Printf("Error while sending file %s to server: %s\n", output.Name(), err.Error())
+				fmt.Printf("Error while sending file %s to server: %s\n", inputPath, err.Error())
 				continue
 			}
 		}
