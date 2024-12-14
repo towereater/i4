@@ -50,8 +50,6 @@ func main() {
 			}
 		}
 
-		// Generate random pressure and job errors
-
 		// Wait some time
 		r := rand.Float32()
 		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
