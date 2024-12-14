@@ -15,11 +15,11 @@ services:
   
   aggregator:
     build: ./aggregator
-    depends_on:
-      - machine-pressure
-      - machine-water
     networks:
       - mach-tier
+      - i4-server_api-net
 
 networks:
   mach-tier: {}
+  i4-server_api-net:
+    external: true

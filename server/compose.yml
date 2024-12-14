@@ -13,6 +13,7 @@ services:
     networks:
       - db-net
       - queue-net
+      - api-net
 
   analyzer:
     build: ./analyzer
@@ -31,6 +32,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    #CHECK UTILITY OF PORTS CONFIG
     ports:
       - "9092:9092"
     expose:
@@ -66,12 +68,12 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      #- /Users/andnic/Documents/mongo-data-i4:/etc/mongo-data
       - ./mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - db-net
-    #command: ["mongod", "--dbpath", "/etc/mongo-data"]
 
 networks:
   db-net: {}
   queue-net: {}
+  api-net:
+    driver: bridge
