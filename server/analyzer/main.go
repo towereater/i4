@@ -80,15 +80,27 @@ func main() {
 			// Gauge data
 			case "GAU":
 				var gauge model.DataGauge
-				json.Unmarshal(jsonString, &gauge)
+				err = json.Unmarshal(jsonString, &gauge)
+				if err != nil {
+					fmt.Printf("Error while converting data gauge to json: %s\n", err.Error())
+					continue
+				}
+
 				gauge.Machine = metadata.Machine
 				err = db.InsertGauge(ctx, client, gauge)
 			// Interval data
 			case "INT":
 				var interval model.DataInterval
-				json.Unmarshal(jsonString, &interval)
+				err = json.Unmarshal(jsonString, &interval)
+				if err != nil {
+					fmt.Printf("Error while converting data gauge to json: %s\n", err.Error())
+					continue
+				}
+
 				interval.Machine = metadata.Machine
 				err = db.InsertInterval(ctx, client, interval)
+			default:
+				err = fmt.Errorf("undefined data type")
 			}
 			if err != nil {
 				fmt.Printf("Error while converting content to string: %s\n", err.Error())
