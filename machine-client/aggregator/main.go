@@ -3,6 +3,7 @@ package main
 import (
 	"aggregator/config"
 	"aggregator/dgpr646"
+	"aggregator/dgwl854"
 	"aggregator/utils"
 	"fmt"
 	"io/fs"
@@ -32,6 +33,7 @@ func main() {
 
 	// Elaboration caches
 	dgpr646Cache := &dgpr646.Cache{}
+	dgwl854Cache := &dgwl854.Cache{}
 
 	// Main loop
 	for {
@@ -88,6 +90,8 @@ func main() {
 			switch machine {
 			case "DGPR646":
 				err = dgpr646.Elaborate(inputFile, outputFile, dgpr646Cache)
+			case "DGWL854":
+				err = dgwl854.Elaborate(inputFile, outputFile, dgwl854Cache)
 			default:
 				err = fmt.Errorf("undefined machine type")
 			}
@@ -122,19 +126,20 @@ func main() {
 			}
 			machine := metadata[2]
 
-			// Open input file
-			inputPath := path.Join(cfg.FileDir, f)
-			inputFile, err := os.Open(inputPath)
-			if err != nil {
-				fmt.Printf("Error while opening input file %s: %s\n", inputPath, err.Error())
-				continue
-			}
-			defer inputFile.Close()
+			// Prepare file path
+			filePath := path.Join(cfg.FileDir, f)
 
 			// Send file to server
-			err = utils.SendFile(cfg, inputFile, machine)
+			err = utils.SendFile(cfg, filePath, machine)
 			if err != nil {
-				fmt.Printf("Error while sending file %s to server: %s\n", inputPath, err.Error())
+				fmt.Printf("Error while sending file %s to server: %s\n", filePath, err.Error())
+				continue
+			}
+
+			// Remove the sent file
+			err = os.Remove(filePath)
+			if err != nil {
+				fmt.Printf("Error while removing file %s: %s\n", filePath, err.Error())
 				continue
 			}
 		}

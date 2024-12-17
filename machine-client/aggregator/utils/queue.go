@@ -14,12 +14,22 @@ import (
 	"time"
 )
 
-func SendFile(cfg config.Config, f *os.File, machine string) error {
+func SendFile(cfg config.Config, filePath string, machine string) error {
+	// Open input file
+	f, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	// Send file metadata
 	metadataOutput, err := uploadMetadata(cfg, f, machine)
 	if err != nil {
 		return err
 	}
+
+	// Restart file reading position
+	f.Seek(0, 0)
 
 	// Send file
 	err = uploadMultiform(cfg, f, metadataOutput.Urls.UploadContent)
