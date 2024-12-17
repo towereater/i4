@@ -46,7 +46,7 @@ func Elaborate(input *os.File, output *os.File, cache *Cache) error {
 		}
 		fmt.Fprintf(output, "%s\n", string(jsonByte))
 
-		// Elaborate interval if job end is recognized
+		// Elaborate interval if job process is recognized
 		if data[1] == "JOBEND" && cache.Job != nil && job != nil && cache.Job.Value == job.Value {
 			content = formatJobInterval(*cache.Job, *job)
 			jsonByte, err = json.Marshal(content)
