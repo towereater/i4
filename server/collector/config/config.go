@@ -15,6 +15,7 @@ type Config struct {
 		Timeout     int    `json:"timeout"`
 		DBName      string `json:"dbname"`
 		Collections struct {
+			Clients  string `json:"clients"`
 			Metadata string `json:"metadata"`
 			Content  string `json:"content"`
 		} `json:"collections"`

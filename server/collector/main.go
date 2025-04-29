@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"collector/config"
+	"collector/handler"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 
 	// Setup server routes
 	fmt.Printf("Setting up routes\n")
-	setupRoutes(cfg, mux)
+	handler.SetupRoutes(cfg, mux)
 
 	// Create the server
 	server := &http.Server{
