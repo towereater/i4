@@ -2,7 +2,7 @@ package handler
 
 import (
 	"collector/config"
-	"collector/middleware"
+	mw "collector/middleware"
 	"fmt"
 	"net/http"
 )
@@ -12,24 +12,33 @@ func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
 	mux.HandleFunc("/", homeHandler)
 
 	// Client handler
-	mux.HandleFunc("/clients",
-		middleware.Logger(middleware.AddConfig(cfg, middleware.AuthenticateAdmin(ClientsHandler))))
-	mux.HandleFunc(fmt.Sprintf("/clients/{%s}", config.ContextClientCode),
-		middleware.Logger(middleware.AddConfig(cfg, middleware.AuthenticateClient(ClientsByIdHandler))))
+	mux.Handle("/clients",
+		mw.LoggedAdminAuthentication(ClientsHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}",
+		config.ContextClientCode),
+		mw.LoggedAdminAuthentication(ClientsByIdHandler(), cfg))
 
 	// Machine handler
-	mux.HandleFunc(fmt.Sprintf("/clients/{%s}/machines", config.ContextClientCode),
-		middleware.Logger(middleware.AddConfig(cfg, middleware.AuthenticateAdmin(MachinesHandler))))
-	mux.HandleFunc(fmt.Sprintf("/clients/{%s}/machines/{%s}", config.ContextClientCode, config.ContextMachineCode),
-		middleware.Logger(middleware.AddConfig(cfg, middleware.AuthenticateAdmin(MachinesByIdHandler))))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines",
+		config.ContextClientCode),
+		mw.LoggedAdminAuthentication(MachinesHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}",
+		config.ContextClientCode,
+		config.ContextMachineCode),
+		mw.LoggedAdminAuthentication(MachinesByIdHandler(), cfg))
 
 	// Upload metadata handler
-	mux.HandleFunc("/uploads/metadata",
-		middleware.AddConfig(cfg, middleware.AuthenticateClient(MetadataHandler)))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/uploads/metadata",
+		config.ContextClientCode,
+		config.ContextMachineCode),
+		mw.LoggedClientAuthentication(MetadataHandler(), cfg))
 
 	// Upload content handler
-	mux.HandleFunc(fmt.Sprintf("/uploads/content/{%s}", config.ContextHash),
-		middleware.AddConfig(cfg, middleware.AuthenticateClient(ContentHandler)))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/uploads/content/{%s}",
+		config.ContextClientCode,
+		config.ContextMachineCode,
+		config.ContextHash),
+		mw.LoggedClientAuthentication(ContentHandler(), cfg))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {

@@ -5,12 +5,14 @@ import (
 	"net/http"
 )
 
-func ContentHandler(w http.ResponseWriter, r *http.Request) {
-	// Check of the method request
-	switch r.Method {
-	case "POST":
-		api.InsertContent(w, r)
-	default:
-		http.Error(w, r.Method, http.StatusMethodNotAllowed)
-	}
+func ContentHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check of the method request
+		switch r.Method {
+		case "POST":
+			api.InsertContent(w, r)
+		default:
+			http.Error(w, r.Method, http.StatusMethodNotAllowed)
+		}
+	})
 }
