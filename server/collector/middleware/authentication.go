@@ -27,7 +27,7 @@ func AuthenticateClient() Adapter {
 			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
 			if err != nil {
 				// Write response output
-				fmt.Printf("Error while searching client with api %s: %s\n", apiKey, err.Error())
+				fmt.Printf("Error while searching client with api key %s: %s\n", apiKey, err.Error())
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
@@ -74,7 +74,7 @@ func AuthenticateAdmin() Adapter {
 			}
 			if client.Code != "00000" {
 				// Write response output
-				fmt.Printf("Client with api %s is not admin\n", apiKey)
+				fmt.Printf("Client with api key %s is not admin\n", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
