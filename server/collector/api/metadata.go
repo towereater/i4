@@ -1,6 +1,7 @@
 package api
 
 import (
+	"collector/config"
 	"collector/db"
 	"collector/model"
 	"encoding/binary"
@@ -19,17 +20,31 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Extract extra parameters
+	client := r.PathValue(string(config.ContextClientCode))
+	if client == "" {
+		fmt.Printf("Request invalid: %s\n", r.URL.Path)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	machine := r.PathValue(string(config.ContextMachineCode))
+	if machine == "" {
+		fmt.Printf("Request invalid: %s\n", r.URL.Path)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	// Compute file id
 	h := make([]byte, 4)
 	binary.LittleEndian.PutUint32(h, req.FileHash)
 
 	hash := fnv.New32()
-	hash.Write([]byte(fmt.Sprintf("pass%s%s%s%sword", req.Client, req.Machine, req.Timestamp, string(h))))
+	hash.Write([]byte(fmt.Sprintf("pass%s%s%s%sword", client, machine, req.Timestamp, string(h))))
 
 	// Create the metadata document
 	metadata := model.UploadMetadata{
-		Client:    req.Client,
-		Machine:   req.Machine,
+		Client:    client,
+		Machine:   machine,
 		Timestamp: req.Timestamp,
 		Size:      req.Size,
 		Extension: req.Extension,
@@ -45,7 +60,12 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare response output
 	urls := model.InsertMetadataOutputUrls{
-		UploadContent: fmt.Sprintf("%s/uploads/content/%d", r.Host, metadata.Hash),
+		//UploadContent: fmt.Sprintf("%s/uploads/content/%d", r.Host, metadata.Hash),
+		UploadContent: fmt.Sprintf("%s/clients/%s/machines/%s/uploads/content/%d",
+			r.Host,
+			metadata.Client,
+			metadata.Machine,
+			metadata.Hash),
 	}
 	output := model.InsertMetadataOutput{
 		Id:   metadata.Hash,
