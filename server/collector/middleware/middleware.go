@@ -27,6 +27,17 @@ func LoggedAdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	})
 }
 
+func LoggedAdminFirstAuthentication(h http.Handler, cfg config.Config) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		adapters := []Adapter{
+			Logger(),
+			AddConfig(cfg),
+			AuthenticateAdminOrFirstUser(),
+		}
+		chainMiddleware(h, adapters...).ServeHTTP(w, r)
+	})
+}
+
 func LoggedClientAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{

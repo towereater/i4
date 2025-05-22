@@ -13,7 +13,7 @@ func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
 
 	// Client handler
 	mux.Handle("/clients",
-		mw.LoggedAdminAuthentication(ClientsHandler(), cfg))
+		mw.LoggedAdminFirstAuthentication(ClientsHandler(), cfg))
 	mux.Handle(fmt.Sprintf("/clients/{%s}",
 		config.ContextClientCode),
 		mw.LoggedAdminAuthentication(ClientsByIdHandler(), cfg))
