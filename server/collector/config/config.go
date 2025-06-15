@@ -18,6 +18,8 @@ type Config struct {
 			Clients  string `json:"clients"`
 			Metadata string `json:"metadata"`
 			Content  string `json:"content"`
+			Gauge    string `json:"gauge"`
+			Interval string `json:"interval"`
 		} `json:"collections"`
 	} `json:"db"`
 	Queue struct {

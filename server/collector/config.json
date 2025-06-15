@@ -9,7 +9,9 @@
         "collections": {
             "clients": "clients",
             "metadata": "uplmeta",
-            "content": "uplcont"
+            "content": "uplcont",
+            "gauge": "datagau",
+            "interval": "dataint"
         }
     },
     "queue": {

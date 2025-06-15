@@ -47,6 +47,14 @@ func InsertClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Setup client collections and indexes
+	db.SetupClientCollections(r.Context(), client.Code)
+	if err != nil {
+		fmt.Printf("Error while creating collections for client %s: %s\n", client.Code, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	// Write response output
 	w.WriteHeader(http.StatusCreated)
 }
