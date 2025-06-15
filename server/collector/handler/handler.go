@@ -13,36 +13,36 @@ func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
 
 	// Client handler
 	mux.Handle("/clients",
-		mw.LoggedAdminFirstAuthentication(ClientsHandler(), cfg))
+		mw.AdminOrFirstAuthentication(ClientsHandler(), cfg))
 	mux.Handle(fmt.Sprintf("/clients/{%s}",
 		config.ContextClientCode),
-		mw.LoggedAdminAuthentication(ClientsByIdHandler(), cfg))
+		mw.AdminAuthentication(ClientsByIdHandler(), cfg))
 
 	// Machine handler
 	mux.Handle(fmt.Sprintf("/clients/{%s}/machines",
 		config.ContextClientCode),
-		mw.LoggedAdminAuthentication(MachinesHandler(), cfg))
+		mw.AdminAuthentication(MachinesHandler(), cfg))
 	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}",
 		config.ContextClientCode,
 		config.ContextMachineCode),
-		mw.LoggedAdminAuthentication(MachinesByIdHandler(), cfg))
+		mw.AdminAuthentication(MachinesByIdHandler(), cfg))
 
 	// Upload metadata handler
-	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/uploads/metadata",
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/metadata",
 		config.ContextClientCode,
 		config.ContextMachineCode),
-		mw.LoggedClientAuthentication(MetadataHandler(), cfg))
+		mw.AdminOrClientAuthentication(MetadataHandler(), cfg))
 
 	// Upload content handler
-	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/uploads/content/{%s}",
+	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/content/{%s}",
 		config.ContextClientCode,
 		config.ContextMachineCode,
 		config.ContextHash),
-		mw.LoggedClientAuthentication(ContentHandler(), cfg))
+		mw.AdminOrClientAuthentication(ContentHandler(), cfg))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	// Response output
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Hello from files API")
+	fmt.Fprintf(w, "Hello from collector API")
 }

@@ -16,7 +16,7 @@ func chainMiddleware(h http.Handler, adapters ...Adapter) http.Handler {
 	return h
 }
 
-func LoggedAdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),
@@ -27,7 +27,7 @@ func LoggedAdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	})
 }
 
-func LoggedAdminFirstAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminOrFirstAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),
@@ -38,12 +38,12 @@ func LoggedAdminFirstAuthentication(h http.Handler, cfg config.Config) http.Hand
 	})
 }
 
-func LoggedClientAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminOrClientAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),
 			AddConfig(cfg),
-			AuthenticateClient(),
+			AuthenticateAdminOrClient(),
 		}
 		chainMiddleware(h, adapters...).ServeHTTP(w, r)
 	})
