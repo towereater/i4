@@ -8,12 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func SelectContent(ctx context.Context, hash uint32) (*model.UploadContent, error) {
+func SelectContent(ctx context.Context, client string, hash string) (*model.UploadContent, error) {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Content)
+	coll, err := getClientCollection(ctx, cfg.DB.DBName, client, cfg.DB.Collections.Content)
 	if err != nil {
 		return nil, err
 	}

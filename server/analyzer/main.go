@@ -33,25 +33,21 @@ func main() {
 	// Main loop
 	for {
 		// Poll the queue for data
-		hash, client, err := utils.UnqueueContent(ctx)
+		client, hash, err := utils.UnqueueContent(ctx)
+		fmt.Printf("Received client %s and hash %s\n", client, hash)
 		if err != nil {
 			fmt.Printf("Error while reading queue: %s\n", err.Error())
 			continue
 		}
 
-		// Get metadata from db
-		metadata, err := db.SelectMetadata(ctx, hash)
-		if err != nil {
-			fmt.Printf("Error while reading metadata from db: %s\n", err.Error())
-			return
-		}
-
 		// Get content from db
-		content, err := db.SelectContent(ctx, hash)
+		content, err := db.SelectContent(ctx, client, hash)
 		if err != nil {
 			fmt.Printf("Error while reading content from db: %s\n", err.Error())
 			continue
 		}
+
+		fmt.Printf("File content is:\n%s\n", string(content.Content))
 
 		// Convert and split the content
 		data := strings.Split(string(content.Content), "\n")
@@ -86,7 +82,6 @@ func main() {
 					continue
 				}
 
-				gauge.Machine = metadata.Machine
 				err = db.InsertGauge(ctx, client, gauge)
 			// Interval data
 			case "INT":
@@ -97,7 +92,6 @@ func main() {
 					continue
 				}
 
-				interval.Machine = metadata.Machine
 				err = db.InsertInterval(ctx, client, interval)
 			default:
 				err = fmt.Errorf("undefined data type")

@@ -3,12 +3,11 @@ package utils
 import (
 	"analyzer/config"
 	"context"
-	"encoding/binary"
 
 	"github.com/segmentio/kafka-go"
 )
 
-func UnqueueContent(ctx context.Context) (uint32, string, error) {
+func UnqueueContent(ctx context.Context) (string, string, error) {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -23,12 +22,12 @@ func UnqueueContent(ctx context.Context) (uint32, string, error) {
 	// Read the message from queue
 	m, err := r.ReadMessage(ctx)
 	if err != nil {
-		return 0, "", err
+		return "", "", err
 	}
 
-	// Convert the read value
-	hash := binary.LittleEndian.Uint32(m.Value[0:4])
-	client := string(m.Value[4:8])
+	// Convert the read value to single components
+	client := string(m.Value[0:5])
+	hash := string(m.Value[5:69])
 
-	return hash, client, nil
+	return client, hash, nil
 }
