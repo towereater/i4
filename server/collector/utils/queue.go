@@ -3,13 +3,13 @@ package utils
 import (
 	"collector/config"
 	"context"
-	"encoding/binary"
+	"strings"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
-func QueueContent(ctx context.Context, hash uint32, client string) error {
+func QueueContent(ctx context.Context, client string, hash string) error {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
@@ -22,15 +22,13 @@ func QueueContent(ctx context.Context, hash uint32, client string) error {
 	defer cancel()
 
 	// Prepare data for queue
-	datetime := time.Now().Format(time.DateTime)
-	h := make([]byte, 4)
-	binary.LittleEndian.PutUint32(h, hash)
-	value := append(h, client...)
+	key := []byte(time.Now().Format(time.DateTime))
+	value := []byte(strings.Join([]string{hash, client}, ""))
 
 	// Write data on queue
 	err := w.WriteMessages(ctx,
 		kafka.Message{
-			Key:   []byte(datetime),
+			Key:   key,
 			Value: value,
 		},
 	)

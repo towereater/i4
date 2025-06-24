@@ -6,30 +6,35 @@ import (
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func InsertMetadata(ctx context.Context, metadata model.UploadMetadata) error {
+func InsertMetadata(ctx context.Context, client string, metadata model.UploadMetadata) error {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Metadata)
+	coll, err := getClientCollection(ctx, cfg.DB.DBName, client, cfg.DB.Collections.Metadata)
 	if err != nil {
 		return err
 	}
 
 	// Insert the document
-	_, err = coll.InsertOne(ctx, metadata)
+	_, err = coll.UpdateOne(ctx,
+		bson.M{"hash": metadata.Hash},
+		bson.M{"$set": metadata},
+		options.Update().SetUpsert(true),
+	)
 
 	return err
 }
 
-func SelectMetadata(ctx context.Context, hash uint32) (*model.UploadMetadata, error) {
+func SelectMetadata(ctx context.Context, client string, hash string) (*model.UploadMetadata, error) {
 	// Extract config
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Retrieve the collection
-	coll, err := getCollection(ctx, cfg.DB.DBName, cfg.DB.Collections.Metadata)
+	coll, err := getClientCollection(ctx, cfg.DB.DBName, client, cfg.DB.Collections.Metadata)
 	if err != nil {
 		return nil, err
 	}
