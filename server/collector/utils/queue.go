@@ -23,7 +23,7 @@ func QueueContent(ctx context.Context, client string, hash string) error {
 
 	// Prepare data for queue
 	key := []byte(time.Now().Format(time.DateTime))
-	value := []byte(strings.Join([]string{hash, client}, ""))
+	value := []byte(strings.Join([]string{client, hash}, ""))
 
 	// Write data on queue
 	err := w.WriteMessages(ctx,
