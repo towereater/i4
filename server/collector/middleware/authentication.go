@@ -27,7 +27,7 @@ func AuthenticateAdminOrClient() Adapter {
 			// Find the client associated to the given api key
 			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
 			if err == mongo.ErrNoDocuments {
-				fmt.Printf("No client with api key %s: %s\n", apiKey)
+				fmt.Printf("No client with api key %s\n", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
@@ -72,7 +72,7 @@ func AuthenticateAdmin() Adapter {
 			// Find the client associated to the given api key
 			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
 			if err == mongo.ErrNoDocuments {
-				fmt.Printf("No client with api key %s", apiKey)
+				fmt.Printf("No client with api key %s\n", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
