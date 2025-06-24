@@ -4,7 +4,6 @@ import (
 	"collector/config"
 	"collector/model"
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -83,7 +82,7 @@ func SetupClientCollections(ctx context.Context, code string) error {
 	cfg := ctx.Value(config.ContextConfig).(config.Config)
 
 	// Construct the database name
-	clientDb := fmt.Sprintf("%s-%s", cfg.DB.DBName, code)
+	clientDb := getClientDBName(cfg.DB.DBName, code)
 
 	// Retrieve the metadata collection
 	coll, err := getCollection(ctx, clientDb, cfg.DB.Collections.Metadata)
