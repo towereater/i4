@@ -80,8 +80,11 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 
 	// Create the content document
 	var buffer bytes.Buffer
+	f.Seek(0, 0)
 	io.Copy(&buffer, f)
 	contentBytes := buffer.Bytes()
+
+	fmt.Printf("File content is:\n%s\n", string(contentBytes))
 
 	content := model.UploadContent{
 		Hash:    metadata.Hash,
