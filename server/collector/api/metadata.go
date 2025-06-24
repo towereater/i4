@@ -36,7 +36,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert the metadata document
-	err = db.InsertMetadata(r.Context(), client, metadata)
+	inserted, err := db.UpsertMetadata(r.Context(), client, metadata)
 	if err != nil {
 		fmt.Printf("Error while inserting metadata: %s\n", err.Error())
 		http.Error(w, "Error while inserting metadata", http.StatusInternalServerError)
@@ -45,5 +45,9 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 
 	// Write response output
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	if inserted {
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
