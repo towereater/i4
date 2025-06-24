@@ -62,6 +62,11 @@ func InsertClient(w http.ResponseWriter, r *http.Request) {
 func SelectClient(w http.ResponseWriter, r *http.Request) {
 	// Extract extra parameters
 	code := r.PathValue(string(config.ContextClientCode))
+	if code == "" {
+		fmt.Printf("Request invalid: %s\n", r.URL.Path)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Get the client document
 	client, err := db.SelectClientByCode(r.Context(), code)
