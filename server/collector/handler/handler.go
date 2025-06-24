@@ -28,15 +28,13 @@ func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
 		mw.AdminAuthentication(MachinesByIdHandler(), cfg))
 
 	// Upload metadata handler
-	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/metadata",
-		config.ContextClientCode,
-		config.ContextMachineCode),
+	mux.Handle(fmt.Sprintf("/clients/{%s}/uploads/metadata",
+		config.ContextClientCode),
 		mw.AdminOrClientAuthentication(MetadataHandler(), cfg))
 
 	// Upload content handler
-	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}/content/{%s}",
+	mux.Handle(fmt.Sprintf("/clients/{%s}/uploads/content/{%s}",
 		config.ContextClientCode,
-		config.ContextMachineCode,
 		config.ContextHash),
 		mw.AdminOrClientAuthentication(ContentHandler(), cfg))
 }
