@@ -1,0 +1,11 @@
+13.10.2021, 09:39:08, "INFO", "LogIN", "User", 0, 0.000000
+13.10.2021, 09:39:08, "INFO", "TIME", "MachineON", 0, 1236084.000000
+13.10.2021, 09:39:08, "INFO", "TIME", "MachineWork", 0, 91964.000000
+13.10.2021, 09:39:08, "INFO", "TIME", "MachineMaintenance", 0, 91964.000000
+13.10.2021, 09:39:08, "INFO", "TIME", "SpindleON", 0, 7388.000000
+13.10.2021, 09:39:08, "INFO", "COUNTER", "SpindleON", 0, 185.000000
+13.10.2021, 09:39:08, "INFO", "COUNTER", "SpindleTC", 0, 182.000000
+13.10.2021, 10:57:01, "INFO", "PP_Load", "C:\Cobalm\Partpro\Test3010.cnc", 0, 0.000000
+13.10.2021, 10:57:05, "EXECUTION", "PP_Start", "C:\Cobalm\Partpro\Test3010.cnc", 0, 618.000000
+13.10.2021, 11:29:37, "EXECUTION", "PP_End", "C:\Cobalm\Partpro\Test3010.cnc", 0, 2570.000000
+13.10.2021, 12:09:54, "INFO", "LogOUT", "User", 0, 0.000000
