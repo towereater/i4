@@ -16,6 +16,7 @@ type DataGauge struct {
 type DataInterval struct {
 	Machine string `json:"machine" bson:"machine"`
 	Key     string `json:"key" bson:"key"`
+	Value   any    `json:"value" bson:"value"`
 	Start   string `json:"start" bson:"start"`
 	End     string `json:"end" bson:"end"`
 	Params  []any  `json:"params,omitempty" bson:"params,omitempty"`
