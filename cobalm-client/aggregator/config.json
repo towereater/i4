@@ -1,0 +1,27 @@
+{
+    "fileDir": "../../tests",
+    "client": "0001",
+    "targets": [
+        {
+            "id": "0001",
+            "machine": "DGPR646",
+            "netip": "machine-pressure:22",
+            "user": "ssh-user",
+            "pass": "passwd",
+            "file": "C:\\COBALM\\LOGS"
+        },
+        {
+            "id": "0002",
+            "machine": "DGWL854",
+            "netip": "machine-water:22",
+            "user": "ssh-user",
+            "pass": "passwd",
+            "file": "C:\\COBALM\\LOGS"
+        }
+    ],
+    "collector": {
+        "host": "collector:12001",
+        "timeout": 5,
+        "uploadMetadata": "/uploads/metadata"
+    }
+}
