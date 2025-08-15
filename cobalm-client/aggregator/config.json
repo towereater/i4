@@ -1,27 +1,17 @@
 {
-    "fileDir": "../../tests",
-    "client": "0001",
-    "targets": [
-        {
-            "id": "0001",
-            "machine": "DGPR646",
-            "netip": "machine-pressure:22",
-            "user": "ssh-user",
-            "pass": "passwd",
-            "file": "C:\\COBALM\\LOGS"
-        },
-        {
-            "id": "0002",
-            "machine": "DGWL854",
-            "netip": "machine-water:22",
-            "user": "ssh-user",
-            "pass": "passwd",
-            "file": "C:\\COBALM\\LOGS"
-        }
-    ],
+    "fileDir": "../../test",
+    "fileRegex": "Y2*M*.csv",
+    "fileDeletion": false,
+    "client": "00001",
+    "apiKey": "...",
+    "waitTime": {
+        "max": 2.0,
+        "min": 1.0
+    },
     "collector": {
         "host": "collector:12001",
         "timeout": 5,
-        "uploadMetadata": "/uploads/metadata"
+        "uploadMetadata": "uploads/metadata",
+        "uploadContent": "uploads/content"
     }
 }

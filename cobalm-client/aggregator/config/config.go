@@ -8,9 +8,12 @@ import (
 )
 
 type Config struct {
-	FileDir  string `json:"fileDir"`
-	Client   string `json:"client"`
-	WaitTime struct {
+	FileDir      string `json:"fileDir"`
+	FileRegex    string `json:"fileRegex"`
+	FileDeletion bool   `json:"fileDeletion"`
+	Client       string `json:"client"`
+	ApiKey       string `json:"apiKey"`
+	WaitTime     struct {
 		Max float32 `json:"max"`
 		Min float32 `json:"min"`
 	} `json:"waitTime"`
@@ -19,6 +22,7 @@ type Config struct {
 		Host           string `json:"host"`
 		Timeout        int    `json:"timeout"`
 		UploadMetadata string `json:"uploadMetadata"`
+		UploadContent  string `json:"uploadContent"`
 	} `json:"collector"`
 }
 

@@ -1,93 +1,107 @@
 package utils
 
-// import (
-// 	"aggregator/config"
-// 	"aggregator/model"
-// 	"bytes"
-// 	"hash/fnv"
-// 	"io"
-// 	"mime/multipart"
-// 	"net/http"
-// 	"os"
-// 	"path/filepath"
-// 	"time"
-// )
+import (
+	"aggregator/config"
+	"aggregator/model"
+	"bytes"
+	"crypto/sha256"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"time"
+)
 
-// func SendFile(cfg config.Config, filePath string, machine string) error {
-// 	// Open input file
-// 	f, err := os.Open(filePath)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer f.Close()
+func SendFile(cfg config.Config, filename string) {
+	// Open file to get file stats
+	filepath := path.Join(cfg.FileDir, filename)
+	f, err := os.Open(filepath)
+	if err != nil {
+		fmt.Printf("Error while opening file %s: %s\n", filename, err.Error())
+		return
+	}
+	defer f.Close()
 
-// 	// Send file metadata
-// 	err := uploadMetadata(cfg, f, machine)
-// 	if err != nil {
-// 		return err
-// 	}
+	fi, err := f.Stat()
+	if err != nil {
+		fmt.Printf("Error while reading file %s stats: %s\n", filename, err.Error())
+		return
+	}
 
-// 	// Restart file reading position
-// 	f.Seek(0, 0)
+	// Compute request data
+	timestamp := time.Now().Format(time.DateTime)
+	size := fi.Size()
 
-// 	// Send file
-// 	err = uploadMultiform(cfg, f, metadataOutput.Urls.UploadContent)
-// 	return err
-// }
+	h := sha256.New()
+	io.Copy(h, f)
+	hash := fmt.Sprintf("%x", h.Sum(nil))
 
-// func uploadMetadata(cfg config.Config, f *os.File, machine string) error {
-// 	// Retrieve file data
-// 	fi, err := f.Stat()
-// 	if err != nil {
-// 		return err
-// 	}
+	metadata := model.InsertMetadataInput{
+		Timestamp: timestamp,
+		Size:      size,
+		Extension: "txt",
+		Hash:      hash,
+	}
 
-// 	// Compute request data
-// 	timestamp := time.Now().Format(time.DateTime)
-// 	size := fi.Size()
+	// Send file metadata
+	err = uploadMetadata(cfg, metadata)
+	if err != nil {
+		fmt.Printf("Error while uploading file %s metadata: %s\n", filename, err.Error())
+		return
+	}
 
-// 	hash := fnv.New32()
-// 	_, err = io.Copy(hash, f)
-// 	if err != nil {
-// 		return err
-// 	}
+	// Restart file reading position
+	f.Seek(0, 0)
 
-// 	// Construct the request
-// 	url := "http://" + cfg.Collector.Host + cfg.Collector.UploadMetadata
-// 	metadataInput := model.InsertMetadataInput{
-// 		Timestamp: timestamp,
-// 		Size:      size,
-// 		Extension: "txt",
-// 		FileHash:  hash.Sum32(),
-// 	}
+	// Send file
+	err = uploadMultiform(cfg, f, metadata.Hash)
+	if err != nil {
+		fmt.Printf("Error while uploading file %s content: %s\n", filename, err.Error())
+		return
+	}
+}
 
-// 	// Execute the request
-// 	_, err = executeHttpRequest(cfg, http.MethodPost, url, metadataInput)
-// 	return err
-// }
+func uploadMetadata(cfg config.Config, metadata model.InsertMetadataInput) error {
+	// Construct the request
+	url := fmt.Sprintf("http://%s/clients/%s/%s",
+		cfg.Collector.Host,
+		cfg.Client,
+		cfg.Collector.UploadMetadata)
 
-// func uploadMultiform(cfg config.Config, f *os.File, contentUrl string) error {
-// 	// Create multiform file
-// 	var buffer bytes.Buffer
-// 	writer := multipart.NewWriter(&buffer)
-// 	defer writer.Close()
+	// Execute the request
+	_, err := executeHttpRequest(cfg, http.MethodPost, url, metadata)
+	return err
+}
 
-// 	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
-// 	if err != nil {
-// 		return err
-// 	}
+func uploadMultiform(cfg config.Config, f *os.File, metadataHash string) error {
+	// Create multiform file
+	var buffer bytes.Buffer
+	writer := multipart.NewWriter(&buffer)
+	defer writer.Close()
 
-// 	// Write data on multiform file
-// 	_, err = io.Copy(part, f)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	writer.Close()
+	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
+	if err != nil {
+		return err
+	}
 
-// 	// Construct the request
-// 	url := "http://" + contentUrl
+	// Write data on multiform file
+	_, err = io.Copy(part, f)
+	if err != nil {
+		return err
+	}
+	writer.Close()
 
-// 	// Execute the request
-// 	_, err = executeHttpFormFile(cfg, http.MethodPost, url, buffer, writer.FormDataContentType())
-// 	return err
-// }
+	// Construct the request
+	url := fmt.Sprintf("http://%s/clients/%s/%s/%s",
+		cfg.Collector.Host,
+		cfg.Client,
+		cfg.Collector.UploadContent,
+		metadataHash)
+
+	// Execute the request
+	_, err = executeHttpFormFile(cfg, http.MethodPost, url, buffer, writer.FormDataContentType())
+	return err
+}
