@@ -72,8 +72,16 @@ func uploadMetadata(cfg config.Config, metadata model.InsertMetadataInput) error
 		cfg.Collector.UploadMetadata)
 
 	// Execute the request
-	_, err := executeHttpRequest(cfg, http.MethodPost, url, metadata)
-	return err
+	res, err := executeHttpRequest(cfg, http.MethodPost, url, metadata)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusCreated {
+		return fmt.Errorf("sending metadata returned status %d", res.StatusCode)
+	}
+
+	return nil
 }
 
 func uploadMultiform(cfg config.Config, f *os.File, metadataHash string) error {
@@ -102,6 +110,14 @@ func uploadMultiform(cfg config.Config, f *os.File, metadataHash string) error {
 		metadataHash)
 
 	// Execute the request
-	_, err = executeHttpFormFile(cfg, http.MethodPost, url, buffer, writer.FormDataContentType())
-	return err
+	res, err := executeHttpFormFile(cfg, http.MethodPost, url, buffer, writer.FormDataContentType())
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("sending metadata returned status %d", res.StatusCode)
+	}
+
+	return nil
 }
