@@ -3,13 +3,13 @@
     "fileRegex": "Y2*M*.csv",
     "fileDeletion": false,
     "client": "00001",
-    "apiKey": "...",
+    "apiKey": "45mfio4fm54jkf4wionfneil",
     "waitTime": {
         "max": 2.0,
         "min": 1.0
     },
     "collector": {
-        "host": "collector:12001",
+        "host": "localhost:12001",
         "timeout": 5,
         "uploadMetadata": "uploads/metadata",
         "uploadContent": "uploads/content"
