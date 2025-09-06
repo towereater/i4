@@ -1,6 +1,6 @@
 module analyzer
 
-go 1.24.2
+go 1.24.5
 
 require (
 	github.com/segmentio/kafka-go v0.4.47
