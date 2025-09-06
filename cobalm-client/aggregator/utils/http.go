@@ -22,7 +22,7 @@ func executeHttpRequest(cfg config.Config, method string, url string, payload an
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", cfg.ApiKey)
+	req.Header.Set("Authentication", cfg.ApiKey)
 
 	client := &http.Client{
 		Timeout: time.Duration(cfg.Collector.Timeout) * time.Second,
@@ -40,7 +40,7 @@ func executeHttpFormFile(cfg config.Config, method string, url string, buf bytes
 	}
 
 	req.Header.Add("Content-Type", content)
-	req.Header.Set("Authorization", cfg.ApiKey)
+	req.Header.Set("Authentication", cfg.ApiKey)
 
 	client := &http.Client{
 		Timeout: time.Duration(cfg.Collector.Timeout) * time.Second,
