@@ -17,6 +17,10 @@
     "queue": {
         "host": "kafka:9092",
         "timeout": 5,
-        "topic": "uploads"
+        "topics": {
+            "uploads": {
+                "topic": "uploads"
+            }
+        }
     }
 }
