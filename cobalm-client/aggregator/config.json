@@ -3,6 +3,7 @@
     "fileRegex": "Y2*M*.csv",
     "fileDeletion": false,
     "client": "00001",
+    "machine": "00001",
     "apiKey": "45mfio4fm54jkf4wionfneil",
     "waitTime": {
         "max": 2.0,

@@ -12,6 +12,7 @@ type Config struct {
 	FileRegex    string `json:"fileRegex"`
 	FileDeletion bool   `json:"fileDeletion"`
 	Client       string `json:"client"`
+	Machine      string `json:"machine"`
 	ApiKey       string `json:"apiKey"`
 	WaitTime     struct {
 		Max float32 `json:"max"`
