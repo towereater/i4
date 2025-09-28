@@ -29,9 +29,15 @@ type DBConfig struct {
 }
 
 type QueueConfig struct {
-	Host    string `json:"host"`
-	Timeout int    `json:"timeout"`
-	Topic   string `json:"topic"`
+	Host    string   `json:"host"`
+	Brokers []string `json:"brokers"`
+	Timeout int      `json:"timeout"`
+	Topics  struct {
+		Uploads struct {
+			Topic string `json:"topic"`
+			Group string `json:"group"`
+		} `json:"uploads"`
+	} `json:"topics"`
 }
 
 func loadFromFile(path string, config any) error {
