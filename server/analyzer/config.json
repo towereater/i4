@@ -18,9 +18,11 @@
             "kafka:9092"
         ],
         "timeout": 5,
-        "uploads": {
-            "topic": "uploads",
-            "group": "analyzer"
+        "topics": {
+            "uploads": {
+                "topic": "uploads",
+                "group": "analyzer"
+            }
         }
     }
 }
