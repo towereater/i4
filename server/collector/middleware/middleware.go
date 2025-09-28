@@ -1,14 +1,11 @@
 package middleware
 
 import (
-	"collector/config"
+	"i4-lib/config"
 	"net/http"
 )
 
 func chainMiddleware(h http.Handler, adapters ...Adapter) http.Handler {
-	// for _, a := range slices.Backward(adapters) {
-	// 	h = a(h)
-	// }
 	for i := len(adapters) - 1; i >= 0; i-- {
 		h = adapters[i](h)
 	}
@@ -16,7 +13,7 @@ func chainMiddleware(h http.Handler, adapters ...Adapter) http.Handler {
 	return h
 }
 
-func AdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminAuthentication(h http.Handler, cfg config.BaseConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),
@@ -27,7 +24,7 @@ func AdminAuthentication(h http.Handler, cfg config.Config) http.Handler {
 	})
 }
 
-func AdminOrFirstAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminOrFirstAuthentication(h http.Handler, cfg config.BaseConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),
@@ -38,7 +35,7 @@ func AdminOrFirstAuthentication(h http.Handler, cfg config.Config) http.Handler 
 	})
 }
 
-func AdminOrClientAuthentication(h http.Handler, cfg config.Config) http.Handler {
+func AdminOrClientAuthentication(h http.Handler, cfg config.BaseConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		adapters := []Adapter{
 			Logger(),

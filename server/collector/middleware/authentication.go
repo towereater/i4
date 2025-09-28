@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"collector/config"
-	"collector/db"
 	"context"
 	"fmt"
+	"i4-lib/config"
+	"i4-lib/db"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,8 +24,11 @@ func AuthenticateAdminOrClient() Adapter {
 			// Get the api key
 			apiKey := auth[0]
 
+			// Extract config
+			cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 			// Find the client associated to the given api key
-			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
+			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err == mongo.ErrNoDocuments {
 				fmt.Printf("No client with api key %s\n", apiKey)
 				w.WriteHeader(http.StatusForbidden)
@@ -69,8 +72,11 @@ func AuthenticateAdmin() Adapter {
 			// Get the api key
 			apiKey := auth[0]
 
+			// Extract config
+			cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 			// Find the client associated to the given api key
-			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
+			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err == mongo.ErrNoDocuments {
 				fmt.Printf("No client with api key %s\n", apiKey)
 				w.WriteHeader(http.StatusForbidden)
@@ -99,8 +105,11 @@ func AuthenticateAdmin() Adapter {
 func AuthenticateAdminOrFirstUser() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Extract config
+			cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 			// Check if no client is defined at all
-			_, err := db.SelectAnyClient(r.Context())
+			_, err := db.SelectAnyClient(cfg.DB)
 			if err != nil && err != mongo.ErrNoDocuments {
 				fmt.Printf("Error while checking any client existence: %s\n", err.Error())
 				w.WriteHeader(http.StatusForbidden)
@@ -124,7 +133,7 @@ func AuthenticateAdminOrFirstUser() Adapter {
 			apiKey := auth[0]
 
 			// Find the client associated to the given api key
-			client, err := db.SelectClientByApiKey(r.Context(), apiKey)
+			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err != nil && err != mongo.ErrNoDocuments {
 				fmt.Printf("Error while searching client with api %s: %s\n",
 					apiKey, err.Error())

@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"collector/config"
 	"context"
+	"i4-lib/config"
 	"net/http"
 )
 
-func AddConfig(cfg config.Config) Adapter {
+func AddConfig(cfg config.BaseConfig) Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Add a basic configuration to the request context

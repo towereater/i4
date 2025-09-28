@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"collector/config"
 	mw "collector/middleware"
 	"fmt"
+	"i4-lib/config"
 	"net/http"
 )
 
-func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
+func SetupRoutes(cfg config.BaseConfig, mux *http.ServeMux) {
 	// Home path handler
 	mux.HandleFunc("/", homeHandler)
 
@@ -36,7 +36,7 @@ func SetupRoutes(cfg config.Config, mux *http.ServeMux) {
 	mux.Handle(fmt.Sprintf("/clients/{%s}/uploads/content/{%s}",
 		config.ContextClientCode,
 		config.ContextHash),
-		mw.AdminOrClientAuthentication(ContentHandler(), cfg))
+		mw.AdminOrClientAuthentication(ContentByHashHandler(), cfg))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {

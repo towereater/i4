@@ -2,12 +2,12 @@ package api
 
 import (
 	"bytes"
-	"collector/config"
-	"collector/db"
-	"collector/model"
-	"collector/utils"
 	"crypto/sha256"
 	"fmt"
+	"i4-lib/config"
+	"i4-lib/db"
+	"i4-lib/model"
+	"i4-lib/service"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -47,8 +47,11 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	io.Copy(h, f)
 	hashCheck := fmt.Sprintf("%x", h.Sum(nil))
 
+	// Extract config
+	cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 	// Get the metadata document
-	metadata, err := db.SelectMetadata(r.Context(), client, hash)
+	metadata, err := db.SelectMetadata(cfg.DB, client, hash)
 	if err != nil {
 		fmt.Printf("No metadata with given hash: %s\n", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -92,7 +95,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert the content document
-	err = db.InsertContent(r.Context(), client, content)
+	err = db.InsertContent(cfg.DB, client, content)
 	if err != nil {
 		fmt.Printf("Error while saving content for client %s: %s\n",
 			client,
@@ -102,7 +105,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Queue content elaboration request
-	err = utils.QueueContent(r.Context(), client, metadata.Hash)
+	err = service.QueueContent(cfg.Queue, client, metadata.Hash)
 	if err != nil {
 		fmt.Printf("Error while queueing content for client %s: %s\n",
 			client,

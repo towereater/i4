@@ -1,11 +1,11 @@
 package api
 
 import (
-	"collector/config"
-	"collector/db"
-	"collector/model"
 	"encoding/json"
 	"fmt"
+	"i4-lib/config"
+	"i4-lib/db"
+	"i4-lib/model"
 	"net/http"
 )
 
@@ -31,14 +31,14 @@ func InsertMachine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Extract config
+	cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 	// Create the machine document
-	machine := model.Machine{
-		Code: req.Code,
-		Name: req.Name,
-	}
+	machine := model.Machine(req)
 
 	// Insert the machine document
-	err = db.InsertMachine(r.Context(), client, machine)
+	err = db.InsertMachine(cfg.DB, client, machine)
 	if err != nil {
 		fmt.Printf("Error while inserting machine %+v: %s\n", machine, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -59,8 +59,11 @@ func RemoveMachine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Extract config
+	cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
+
 	// Remove the machine document
-	err := db.RemoveMachine(r.Context(), client, machine)
+	err := db.RemoveMachine(cfg.DB, client, machine)
 	if err != nil {
 		fmt.Printf("Error while removing machine %+v: %s\n", machine, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
