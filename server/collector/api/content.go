@@ -17,14 +17,14 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	// Extract extra parameters
 	client := r.PathValue(string(config.ContextClientCode))
 	if client == "" {
-		fmt.Printf("Client parameter invalid: %s\n", r.URL.Path)
+		service.Log("Client parameter invalid: %s\n", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	hash := r.PathValue(string(config.ContextHash))
 	if hash == "" {
-		fmt.Printf("Hash parameter invalid: %s\n", r.URL.Path)
+		service.Log("Hash parameter invalid: %s\n", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -32,7 +32,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	// Get the file content
 	f, header, err := r.FormFile("file")
 	if err != nil {
-		fmt.Printf("File content invalid: %s\n", err.Error())
+		service.Log("File content invalid: %s\n", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -53,28 +53,28 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	// Get the metadata document
 	metadata, err := db.SelectMetadata(cfg.DB, client, hash)
 	if err != nil {
-		fmt.Printf("No metadata with given hash: %s\n", err.Error())
+		service.Log("No metadata with given hash: %s\n", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Match metadata with received file properties
 	if metadata.Size != sizeCheck {
-		fmt.Printf("File size (%d) does not match metadata (%d)\n",
+		service.Log("File size (%d) does not match metadata (%d)\n",
 			sizeCheck,
 			metadata.Size)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if metadata.Extension != extCheck {
-		fmt.Printf("File extension (%s) does not match metadata (%s)\n",
+		service.Log("File extension (%s) does not match metadata (%s)\n",
 			extCheck,
 			metadata.Extension)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if metadata.Hash != hashCheck {
-		fmt.Printf("File hash (%s) does not match metadata (%s)\n",
+		service.Log("File hash (%s) does not match metadata (%s)\n",
 			hashCheck,
 			metadata.Hash)
 		w.WriteHeader(http.StatusBadRequest)
@@ -87,7 +87,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	io.Copy(&buffer, f)
 	contentBytes := buffer.Bytes()
 
-	fmt.Printf("File content is:\n%s\n", string(contentBytes))
+	service.Log("File content is:\n%s\n", string(contentBytes))
 
 	content := model.UploadContent{
 		Hash:    metadata.Hash,
@@ -97,7 +97,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	// Insert the content document
 	err = db.InsertContent(cfg.DB, client, content)
 	if err != nil {
-		fmt.Printf("Error while saving content for client %s: %s\n",
+		service.Log("Error while saving content for client %s: %s\n",
 			client,
 			err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -107,7 +107,7 @@ func InsertContent(w http.ResponseWriter, r *http.Request) {
 	// Queue content elaboration request
 	err = service.QueueContent(cfg.Queue, client, metadata.Hash)
 	if err != nil {
-		fmt.Printf("Error while queueing content for client %s: %s\n",
+		service.Log("Error while queueing content for client %s: %s\n",
 			client,
 			err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

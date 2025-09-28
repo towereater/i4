@@ -1,17 +1,15 @@
 package middleware
 
 import (
-	"fmt"
+	"i4-lib/service"
 	"net/http"
-	"time"
 )
 
 func Logger() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Log the request
-			fmt.Printf("%s %s request at %s\n",
-				time.Now().UTC().Format("2006-01-02T15:04:05"),
+			service.Log("%s request at %s\n",
 				r.Method,
 				r.URL,
 			)

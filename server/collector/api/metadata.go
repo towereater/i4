@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"i4-lib/config"
 	"i4-lib/db"
 	"i4-lib/model"
+	"i4-lib/service"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	// Extract extra parameters
 	client := r.PathValue(string(config.ContextClientCode))
 	if client == "" {
-		fmt.Printf("Client parameter invalid: %s\n", r.URL.Path)
+		service.Log("Client parameter invalid: %s\n", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -22,7 +22,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	var req model.InsertMetadataInput
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		fmt.Printf("Could not convert request body\n")
+		service.Log("Could not convert request body\n")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -36,7 +36,7 @@ func InsertMetadata(w http.ResponseWriter, r *http.Request) {
 	// Insert the metadata document
 	inserted, err := db.UpsertMetadata(cfg.DB, client, metadata)
 	if err != nil {
-		fmt.Printf("Error while inserting metadata: %s\n", err.Error())
+		service.Log("Error while inserting metadata: %s\n", err.Error())
 		http.Error(w, "Error while inserting metadata", http.StatusInternalServerError)
 		return
 	}
