@@ -25,7 +25,7 @@ const ELAB_FILENAME = "elab-"
 func main() {
 	// Get run args
 	var configPath string
-	fmt.Printf("Starting execution, arg params: %v\n", os.Args)
+	log("Starting execution, arg params: %v\n", os.Args)
 	if len(os.Args) < 2 {
 		configPath = "config.json"
 	} else {
@@ -33,10 +33,10 @@ func main() {
 	}
 
 	// Setup machine config
-	fmt.Printf("Loading configuration from %s\n", configPath)
+	log("Loading configuration from %s\n", configPath)
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		fmt.Printf("Error while reading config file %s: %s\n", configPath, err.Error())
+		log("Error while reading config file %s: %s\n", configPath, err.Error())
 		os.Exit(2)
 	}
 
@@ -45,13 +45,13 @@ func main() {
 		// Search for all files to elaborate
 		files, err := fs.Glob(os.DirFS(cfg.FileDir), cfg.FileRegex)
 		if err != nil {
-			fmt.Printf("Error while searching files to elaborate: %s\n", err.Error())
+			log("Error while searching files to elaborate: %s\n", err.Error())
 			return
 		}
 		if len(files) > 0 {
-			fmt.Printf("Found following files to elaborate: %+v\n", files)
+			log("Found following files to elaborate: %+v\n", files)
 		} else {
-			fmt.Printf("Found no files to elaborate\n")
+			log("Found no files to elaborate\n")
 		}
 
 		// Elaborate all found files
@@ -62,24 +62,40 @@ func main() {
 		// Search for all files to send
 		files, err = fs.Glob(os.DirFS(cfg.FileDir), ELAB_FILENAME+"*.txt")
 		if err != nil {
-			fmt.Printf("Error while searching files to send: %s\n", err.Error())
+			log("Error while searching files to send: %s\n", err.Error())
 			return
 		}
 		if len(files) > 0 {
-			fmt.Printf("Found following files to send: %+v\n", files)
+			log("Found following files to send: %+v\n", files)
 		} else {
-			fmt.Printf("Found no files to send\n")
+			log("Found no files to send\n")
 		}
 
 		// Elaborate all found files
 		for _, f := range files {
-			utils.SendFile(cfg, f)
+			filepath := path.Join(cfg.FileDir, f)
+
+			// Send file to server
+			err = utils.SendFile(cfg, filepath)
+			if err != nil {
+				log("Error while sending file %s: %s\n", f, err.Error())
+				continue
+			}
+
+			// Delete sent file
+			if cfg.FileDeletion {
+				err = os.Remove(filepath)
+				if err != nil {
+					log("Error while removing file %s: %s\n", f, err.Error())
+					continue
+				}
+			}
 		}
 
 		// Wait some time
 		r := rand.Float32()
 		waitTime := r*(cfg.WaitTime.Max-cfg.WaitTime.Min) + cfg.WaitTime.Min
-		fmt.Printf("Waiting now %f minutes before next elaboration\n", waitTime)
+		log("Waiting now %f minutes before next elaboration\n", waitTime)
 		time.Sleep(time.Duration(waitTime) * time.Minute)
 	}
 }
@@ -99,7 +115,7 @@ func elaborateFile(cfg config.Config, filename string) {
 	// Open input file
 	inputFile, err := os.Open(inputPathNew)
 	if err != nil {
-		fmt.Printf("Error while opening input file %s: %s\n", inputPathNew, err.Error())
+		log("Error while opening input file %s: %s\n", inputPathNew, err.Error())
 		return
 	}
 	defer inputFile.Close()
@@ -109,7 +125,7 @@ func elaborateFile(cfg config.Config, filename string) {
 		ELAB_FILENAME, filename[0:strings.LastIndex(filename, ".")]))
 	outputFile, err := utils.CreateOrAppendFile(outputPath)
 	if err != nil {
-		fmt.Printf("Error while opening output file %s: %s\n", outputPath, err.Error())
+		log("Error while opening output file %s: %s\n", outputPath, err.Error())
 		return
 	}
 	defer outputFile.Close()
@@ -127,7 +143,7 @@ func elaborateFile(cfg config.Config, filename string) {
 		// Split data content
 		data := strings.Split(scanner.Text(), ", ")
 
-		machine := "TEST_Machine"
+		machine := cfg.Machine
 
 		data[2] = strings.Trim(data[2], "\"")
 		data[3] = strings.Trim(data[3], "\"")
@@ -200,7 +216,7 @@ func elaborateFile(cfg config.Config, filename string) {
 			// Modify counters
 			rowSkipped++
 
-			fmt.Printf("Unknown record, skipping\n")
+			log("Unknown record, skipping\n")
 			continue
 		}
 
@@ -216,7 +232,7 @@ func elaborateFile(cfg config.Config, filename string) {
 	}
 
 	// Print of the final report
-	fmt.Printf("Elaboration of file %s complete with:\n"+
+	log("Elaboration of file %s complete with:\n"+
 		"\tRows read: %d\n"+
 		"\tRows written: %d\n"+
 		"\tRows skipped: %d\n"+
@@ -228,8 +244,16 @@ func elaborateFile(cfg config.Config, filename string) {
 		inputFile.Close()
 		err = os.Remove(inputPathNew)
 		if err != nil {
-			fmt.Printf("Error while deleting temp file %s: %s\n", inputPathNew, err.Error())
+			log("Error while deleting temp file %s: %s\n", inputPathNew, err.Error())
 			return
 		}
 	}
+}
+
+func log(message string, params ...any) {
+	// Print a message with timestamp data
+	fmt.Printf("%s - %s\n",
+		time.Now().UTC().Format("2006-01-02T15:04:05"),
+		fmt.Sprintf(message, params...),
+	)
 }

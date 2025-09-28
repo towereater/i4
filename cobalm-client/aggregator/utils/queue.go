@@ -10,25 +10,21 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 )
 
-func SendFile(cfg config.Config, filename string) {
+func SendFile(cfg config.Config, filepath string) error {
 	// Open file to get file stats
-	filepath := path.Join(cfg.FileDir, filename)
 	f, err := os.Open(filepath)
 	if err != nil {
-		fmt.Printf("Error while opening file %s: %s\n", filename, err.Error())
-		return
+		return err
 	}
 	defer f.Close()
 
 	fi, err := f.Stat()
 	if err != nil {
-		fmt.Printf("Error while reading file %s stats: %s\n", filename, err.Error())
-		return
+		return err
 	}
 
 	// Compute request data
@@ -49,8 +45,7 @@ func SendFile(cfg config.Config, filename string) {
 	// Send file metadata
 	err = uploadMetadata(cfg, metadata)
 	if err != nil {
-		fmt.Printf("Error while uploading file %s metadata: %s\n", filename, err.Error())
-		return
+		return err
 	}
 
 	// Restart file reading position
@@ -59,9 +54,10 @@ func SendFile(cfg config.Config, filename string) {
 	// Send file
 	err = uploadMultiform(cfg, f, metadata.Hash)
 	if err != nil {
-		fmt.Printf("Error while uploading file %s content: %s\n", filename, err.Error())
-		return
+		return err
 	}
+
+	return nil
 }
 
 func uploadMetadata(cfg config.Config, metadata model.InsertMetadataInput) error {
