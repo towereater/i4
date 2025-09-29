@@ -60,6 +60,50 @@ func SelectInterval(cfg config.DBConfig, client string, dataFilter model.DataInt
 	return data, err
 }
 
+func CountInterval(cfg config.DBConfig, client string, dataFilter model.DataInterval, tsFrom string, tsTo string) (int64, error) {
+	// Setup timeout
+	ctx, cancel := getContextFromConfig(cfg)
+	defer cancel()
+
+	// Retrieve the collection
+	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Interval)
+	if err != nil {
+		return -1, err
+	}
+
+	// Setup filter
+	filter := bson.M{}
+	if dataFilter.Machine != "" {
+		filter["machine"] = dataFilter.Machine
+	}
+	if dataFilter.Key != "" {
+		filter["key"] = dataFilter.Key
+	}
+	if dataFilter.Value != "" {
+		filter["value"] = dataFilter.Value
+	}
+
+	tsFilter := bson.M{}
+	if tsFrom != "" {
+		tsFilter["gt"] = tsFrom
+		filter["start"] = tsFilter
+		filter["end"] = tsFilter
+	}
+	if tsTo != "" {
+		tsFilter["lt"] = tsTo
+		filter["start"] = tsFilter
+		filter["end"] = tsFilter
+	}
+
+	// Count the documents
+	count, err := coll.CountDocuments(ctx, filter, nil)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, err
+}
+
 func InsertInterval(cfg config.DBConfig, client string, data model.DataInterval) error {
 	// Setup timeout
 	ctx, cancel := getContextFromConfig(cfg)

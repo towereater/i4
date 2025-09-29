@@ -9,8 +9,6 @@ import (
 	"i4-lib/service"
 	"net/http"
 	"strconv"
-
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func SelectData(w http.ResponseWriter, r *http.Request) {
@@ -70,28 +68,32 @@ func SelectData(w http.ResponseWriter, r *http.Request) {
 	// Determine which data to get from db
 	switch dataType {
 	case "GAU":
+		filter := model.DataGauge{
+			Machine: machine,
+			Key:     key,
+			Value:   value,
+		}
 		switch operation {
 		case "ALL":
-			filter := model.DataGauge{
-				Machine: machine,
-				Key:     key,
-				Value:   value,
-			}
 			data, err = db.SelectGauge(cfg.DB, code, filter, tsFrom, tsTo, limit)
+		case "COU":
+			data, err = db.CountGauge(cfg.DB, code, filter, tsFrom, tsTo)
 		default:
 			service.Log("Invalid operation requested: %s", operation)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	case "INT":
+		filter := model.DataInterval{
+			Machine: machine,
+			Key:     key,
+			Value:   value,
+		}
 		switch operation {
 		case "ALL":
-			filter := model.DataInterval{
-				Machine: machine,
-				Key:     key,
-				Value:   value,
-			}
 			data, err = db.SelectInterval(cfg.DB, code, filter, tsFrom, tsTo, limit)
+		case "COU":
+			data, err = db.CountInterval(cfg.DB, code, filter, tsFrom, tsTo)
 		default:
 			service.Log("Invalid operation requested: %s", operation)
 			w.WriteHeader(http.StatusBadRequest)
@@ -103,11 +105,6 @@ func SelectData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err == mongo.ErrNoDocuments {
-		service.Log("No data with given filters for client %s", code)
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
 	if err != nil {
 		service.Log("Error while searching data for client %s: %s", code, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

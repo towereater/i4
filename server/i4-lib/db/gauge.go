@@ -62,6 +62,52 @@ func SelectGauge(cfg config.DBConfig, client string, dataFilter model.DataGauge,
 	return data, err
 }
 
+func CountGauge(cfg config.DBConfig, client string, dataFilter model.DataGauge, tsFrom string, tsTo string) (int64, error) {
+	// Setup timeout
+	ctx, cancel := getContextFromConfig(cfg)
+	defer cancel()
+
+	// Retrieve the collection
+	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Gauge)
+	if err != nil {
+		return -1, err
+	}
+
+	// Setup filter
+	filter := bson.M{}
+	if dataFilter.Machine != "" {
+		filter["machine"] = dataFilter.Machine
+	}
+	if dataFilter.Key != "" {
+		filter["key"] = dataFilter.Key
+	}
+	if dataFilter.Value != "" {
+		filter["value"] = dataFilter.Value
+	}
+
+	if dataFilter.Timestamp != "" {
+		filter["ts"] = dataFilter.Timestamp
+	} else {
+		tsFilter := bson.M{}
+		if tsFrom != "" {
+			tsFilter["gt"] = tsFrom
+			filter["ts"] = tsFilter
+		}
+		if tsTo != "" {
+			tsFilter["lt"] = tsTo
+			filter["ts"] = tsFilter
+		}
+	}
+
+	// Count the documents
+	count, err := coll.CountDocuments(ctx, filter, nil)
+	if err != nil {
+		return -1, err
+	}
+
+	return count, err
+}
+
 func InsertGauge(cfg config.DBConfig, client string, data model.DataGauge) error {
 	// Setup timeout
 	ctx, cancel := getContextFromConfig(cfg)
