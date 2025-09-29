@@ -19,39 +19,39 @@ func main() {
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
-	service.Log("Loading configuration from %s\n", configPath)
+	service.Log("Loading configuration from %s", configPath)
 
 	// Setup machine config
 	var cfg config.BaseConfig
 	err := config.LoadConfig(configPath, &cfg)
 	if err != nil {
-		service.Log("Error while reading config file: %s\n", err.Error())
+		service.Log("Error while reading config file: %s", err.Error())
 		os.Exit(2)
 	}
-	service.Log("Configuration loaded: %+v\n", cfg)
+	service.Log("Configuration loaded: %+v", cfg)
 
 	// Main loop
 	for {
 		// Poll the queue for data
 		client, hash, err := service.UnqueueContent(cfg.Queue)
-		service.Log("Received client %s and hash %s\n", client, hash)
+		service.Log("Received client %s and hash %s", client, hash)
 		if err != nil {
-			service.Log("Error while reading queue: %s\n", err.Error())
+			service.Log("Error while reading queue: %s", err.Error())
 			continue
 		}
 
 		// Get content from db
 		content, err := db.SelectContent(cfg.DB, client, hash)
 		if err != nil {
-			service.Log("Error while reading content from db: %s\n", err.Error())
+			service.Log("Error while reading content from db: %s", err.Error())
 			continue
 		}
 
 		// Convert and split the content
-		data := strings.Split(string(content.Content), "")
+		data := strings.SplitSeq(string(content.Content), "\n")
 
 		// Save data to db
-		for _, r := range data {
+		for r := range data {
 			if r == "" {
 				service.Log("Row skipped because empty data")
 				continue
@@ -61,13 +61,13 @@ func main() {
 			var dataContent model.DataContent
 			err = json.Unmarshal([]byte(r), &dataContent)
 			if err != nil {
-				service.Log("Error while converting common data content %s: %s\n", r, err.Error())
+				service.Log("Error while converting common data content %s: %s", r, err.Error())
 				continue
 			}
 
 			jsonString, err := json.Marshal(dataContent.Content)
 			if err != nil {
-				service.Log("Error while converting specific data content %+v: %s\n", dataContent.Content, err.Error())
+				service.Log("Error while converting specific data content %+v: %s", dataContent.Content, err.Error())
 				continue
 			}
 
@@ -77,7 +77,7 @@ func main() {
 				var gauge model.DataGauge
 				err = json.Unmarshal(jsonString, &gauge)
 				if err != nil {
-					service.Log("Error while converting data gauge %s: %s\n", jsonString, err.Error())
+					service.Log("Error while converting data gauge %s: %s", jsonString, err.Error())
 					continue
 				}
 
@@ -86,7 +86,7 @@ func main() {
 					service.Log("Error while inserting data gauge because of duplicate key: %+v", gauge)
 					continue
 				} else if err != nil {
-					service.Log("Error while saving data gauge %+v: %s\n", gauge, err.Error())
+					service.Log("Error while saving data gauge %+v: %s", gauge, err.Error())
 					continue
 				}
 			// Interval data
@@ -94,7 +94,7 @@ func main() {
 				var interval model.DataInterval
 				err = json.Unmarshal(jsonString, &interval)
 				if err != nil {
-					service.Log("Error while converting data interval: %s\n", err.Error())
+					service.Log("Error while converting data interval: %s", err.Error())
 					continue
 				}
 
@@ -103,7 +103,7 @@ func main() {
 					service.Log("Error while inserting data interval because of duplicate key: %+v", interval)
 					continue
 				} else if err != nil {
-					service.Log("Error while saving data interval %+v: %s\n", interval, err.Error())
+					service.Log("Error while saving data interval %+v: %s", interval, err.Error())
 					continue
 				}
 			default:
