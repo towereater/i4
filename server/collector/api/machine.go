@@ -10,10 +10,10 @@ import (
 )
 
 func InsertMachine(w http.ResponseWriter, r *http.Request) {
-	// Extract extra parameters
+	// Extract path parameters
 	client := r.PathValue(string(config.ContextClientCode))
 	if client == "" {
-		service.Log("Request invalid: %s\n", r.URL.Path)
+		service.Log("Request invalid: %s", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -26,7 +26,7 @@ func InsertMachine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Code == "" || req.Name == "" {
-		service.Log("Request invalid: %+v\n", req)
+		service.Log("Request invalid: %+v", req)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -40,7 +40,7 @@ func InsertMachine(w http.ResponseWriter, r *http.Request) {
 	// Insert the machine document
 	err = db.InsertMachine(cfg.DB, client, machine)
 	if err != nil {
-		service.Log("Error while inserting machine %+v: %s\n", machine, err.Error())
+		service.Log("Error while inserting machine %+v: %s", machine, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -50,11 +50,11 @@ func InsertMachine(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveMachine(w http.ResponseWriter, r *http.Request) {
-	// Extract extra parameters
+	// Extract path parameters
 	client := r.PathValue(string(config.ContextClientCode))
 	machine := r.PathValue(string(config.ContextMachineCode))
 	if client == "" || machine == "" {
-		service.Log("Request invalid: %s\n", r.URL.Path)
+		service.Log("Request invalid: %s", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -65,7 +65,7 @@ func RemoveMachine(w http.ResponseWriter, r *http.Request) {
 	// Remove the machine document
 	err := db.RemoveMachine(cfg.DB, client, machine)
 	if err != nil {
-		service.Log("Error while removing machine %+v: %s\n", machine, err.Error())
+		service.Log("Error while removing machine %+v: %s", machine, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

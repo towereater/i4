@@ -13,7 +13,7 @@ import (
 func main() {
 	// Get run args
 	if len(os.Args) < 2 {
-		service.Log("No config file set\n")
+		service.Log("No config file set")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
@@ -32,7 +32,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Setup server routes
-	service.Log("Setting up routes\n")
+	service.Log("Setting up routes")
 	handler.SetupRoutes(cfg, mux)
 
 	// Create the server
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Starting up
-	service.Log("Ready to listen incoming requests\n")
+	service.Log("Ready to listen incoming requests")
 	server.Serve(ln)
 	if err != nil {
 		service.Log("Error while starting up server: %s\n", err.Error())

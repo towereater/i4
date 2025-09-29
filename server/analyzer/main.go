@@ -15,7 +15,7 @@ import (
 func main() {
 	// Get run args
 	if len(os.Args) < 2 {
-		service.Log("No config file set\n")
+		service.Log("No config file set")
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
@@ -48,7 +48,7 @@ func main() {
 		}
 
 		// Convert and split the content
-		data := strings.Split(string(content.Content), "\n")
+		data := strings.Split(string(content.Content), "")
 
 		// Save data to db
 		for _, r := range data {
