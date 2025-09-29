@@ -16,7 +16,7 @@ func SetupRoutes(cfg config.BaseConfig, mux *http.ServeMux) {
 		mw.AdminOrFirstAuthentication(ClientsHandler(), cfg))
 	mux.Handle(fmt.Sprintf("/clients/{%s}",
 		config.ContextClientCode),
-		mw.AdminAuthentication(ClientsByIdHandler(), cfg))
+		mw.AdminAuthentication(ClientByIdHandler(), cfg))
 
 	// Machine handler
 	mux.Handle(fmt.Sprintf("/clients/{%s}/machines",
@@ -25,7 +25,7 @@ func SetupRoutes(cfg config.BaseConfig, mux *http.ServeMux) {
 	mux.Handle(fmt.Sprintf("/clients/{%s}/machines/{%s}",
 		config.ContextClientCode,
 		config.ContextMachineCode),
-		mw.AdminAuthentication(MachinesByIdHandler(), cfg))
+		mw.AdminAuthentication(MachineByIdHandler(), cfg))
 
 	// Upload metadata handler
 	mux.Handle(fmt.Sprintf("/clients/{%s}/uploads/metadata",
@@ -37,6 +37,11 @@ func SetupRoutes(cfg config.BaseConfig, mux *http.ServeMux) {
 		config.ContextClientCode,
 		config.ContextHash),
 		mw.AdminOrClientAuthentication(ContentByHashHandler(), cfg))
+
+	// Data handler
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(DataHandler(), cfg))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
