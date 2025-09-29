@@ -45,7 +45,7 @@ func UnqueueContent(cfg config.QueueConfig) (string, string, error) {
 	defer r.Close()
 
 	// Setup timeout
-	ctx, _ := getContextFromConfig(cfg)
+	ctx := context.Background()
 
 	// Read the message from queue
 	m, err := r.ReadMessage(ctx)
