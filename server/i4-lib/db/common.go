@@ -32,7 +32,7 @@ func getClientCollection(ctx context.Context, cfg config.DBConfig, code string, 
 	clientDB := getClientDBName(cfg.DBName, code)
 
 	// Retrieve the collection
-	return client.Database(getClientDBName(clientDB, code)).Collection(coll), nil
+	return client.Database(clientDB).Collection(coll), nil
 }
 
 func getContextFromConfig(cfg config.DBConfig) (context.Context, context.CancelFunc) {
