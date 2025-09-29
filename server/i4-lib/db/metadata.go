@@ -14,7 +14,7 @@ func SelectMetadata(cfg config.DBConfig, client string, hash string) (model.Uplo
 	defer cancel()
 
 	// Retrieve the collection
-	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Clients)
+	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Metadata)
 	if err != nil {
 		return model.UploadMetadata{}, err
 	}
@@ -32,7 +32,7 @@ func UpsertMetadata(cfg config.DBConfig, client string, metadata model.UploadMet
 	defer cancel()
 
 	// Retrieve the collection
-	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Clients)
+	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Metadata)
 	if err != nil {
 		return false, err
 	}
