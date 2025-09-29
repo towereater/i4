@@ -13,6 +13,15 @@ type DataGauge struct {
 	Params    []any  `json:"params,omitempty" bson:"params,omitempty"`
 }
 
+type DataGaugeSum struct {
+	Id struct {
+		Machine string `json:"machine" bson:"machine"`
+		Key     string `json:"key" bson:"key"`
+		Value   any    `json:"value" bson:"value"`
+	} `json:"id" bson:"_id"`
+	Count int64 `json:"count" bson:"count"`
+}
+
 type DataInterval struct {
 	Machine string `json:"machine" bson:"machine"`
 	Key     string `json:"key" bson:"key"`
@@ -20,4 +29,13 @@ type DataInterval struct {
 	Start   string `json:"start" bson:"start"`
 	End     string `json:"end" bson:"end"`
 	Params  []any  `json:"params,omitempty" bson:"params,omitempty"`
+}
+
+type DataIntervalSum struct {
+	Id struct {
+		Machine string `json:"machine" bson:"machine"`
+		Key     string `json:"key" bson:"key"`
+		Value   any    `json:"value" bson:"value"`
+	} `json:"id" bson:"_id"`
+	Count int64 `json:"count" bson:"count"`
 }

@@ -78,6 +78,8 @@ func SelectData(w http.ResponseWriter, r *http.Request) {
 			data, err = db.SelectGauge(cfg.DB, code, filter, tsFrom, tsTo, limit)
 		case "COU":
 			data, err = db.CountGauge(cfg.DB, code, filter, tsFrom, tsTo)
+		case "SUM":
+			data, err = db.SumGauge(cfg.DB, code, filter, tsFrom, tsTo)
 		default:
 			service.Log("Invalid operation requested: %s", operation)
 			w.WriteHeader(http.StatusBadRequest)
@@ -94,6 +96,8 @@ func SelectData(w http.ResponseWriter, r *http.Request) {
 			data, err = db.SelectInterval(cfg.DB, code, filter, tsFrom, tsTo, limit)
 		case "COU":
 			data, err = db.CountInterval(cfg.DB, code, filter, tsFrom, tsTo)
+		case "SUM":
+			data, err = db.SumInterval(cfg.DB, code, filter, tsFrom, tsTo)
 		default:
 			service.Log("Invalid operation requested: %s", operation)
 			w.WriteHeader(http.StatusBadRequest)
