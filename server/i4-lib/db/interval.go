@@ -111,7 +111,7 @@ func SumInterval(cfg config.DBConfig, client string, dataFilter model.DataInterv
 	defer cancel()
 
 	// Retrieve the collection
-	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Gauge)
+	coll, err := getClientCollection(ctx, cfg, client, cfg.Collections.Interval)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +150,13 @@ func SumInterval(cfg config.DBConfig, client string, dataFilter model.DataInterv
 				"value":   "$value",
 			},
 			"count": bson.M{"$sum": 1},
+			"sum": bson.M{"$sum": bson.M{"$divide": bson.A{
+				bson.M{"$subtract": bson.A{
+					bson.M{"$toDate": "$end"},
+					bson.M{"$toDate": "$start"},
+				}},
+				1000,
+			}}},
 		}}},
 		bson.D{{Key: "$sort", Value: bson.D{
 			{Key: "machine", Value: 1},

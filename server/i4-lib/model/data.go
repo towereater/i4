@@ -19,7 +19,8 @@ type DataGaugeSum struct {
 		Key     string `json:"key" bson:"key"`
 		Value   any    `json:"value" bson:"value"`
 	} `json:"id" bson:"_id"`
-	Count int64 `json:"count" bson:"count"`
+	Count int64   `json:"count" bson:"count"`
+	Sum   float64 `json:"sum" bson:"sum"`
 }
 
 type DataInterval struct {
@@ -37,5 +38,6 @@ type DataIntervalSum struct {
 		Key     string `json:"key" bson:"key"`
 		Value   any    `json:"value" bson:"value"`
 	} `json:"id" bson:"_id"`
-	Count int64 `json:"count" bson:"count"`
+	Count int64   `json:"count" bson:"count"`
+	Sum   float64 `json:"sum" bson:"sum"`
 }
