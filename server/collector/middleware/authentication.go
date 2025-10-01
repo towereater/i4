@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"i4-lib/config"
 	"i4-lib/db"
+	"i4-lib/service"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,16 +13,16 @@ import (
 func AuthenticateAdminOrClient() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Get the authentication header from request
-			auth := r.Header["Authentication"]
-			if len(auth) != 1 {
-				fmt.Printf("Authorization token invalid: %s\n", auth)
+			// Logging
+			service.Log("Headers: %+v", r.Header)
+
+			// Get the api key from request
+			apiKey := r.Header.Get("Authentication")
+			if apiKey == "" {
+				service.Log("Authentication token invalid: %s", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-
-			// Get the api key
-			apiKey := auth[0]
 
 			// Extract config
 			cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
@@ -30,12 +30,12 @@ func AuthenticateAdminOrClient() Adapter {
 			// Find the client associated to the given api key
 			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err == mongo.ErrNoDocuments {
-				fmt.Printf("No client with api key %s\n", apiKey)
+				service.Log("No client with api key %s", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 			if err != nil {
-				fmt.Printf("Error while searching client with api key %s: %s\n",
+				service.Log("Error while searching client with api key %s: %s",
 					apiKey, err.Error())
 				w.WriteHeader(http.StatusForbidden)
 				return
@@ -44,7 +44,7 @@ func AuthenticateAdminOrClient() Adapter {
 			// Extract extra parameters
 			code := r.PathValue(string(config.ContextClientCode))
 			if client.Code != code && client.Code != config.ClientAdminCode {
-				fmt.Printf("Client code %s not enabled to manage client %s\n",
+				service.Log("Client code %s not enabled to manage client %s",
 					client.Code, code)
 				w.WriteHeader(http.StatusForbidden)
 				return
@@ -61,16 +61,13 @@ func AuthenticateAdminOrClient() Adapter {
 func AuthenticateAdmin() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Get the authentication header from request
-			auth := r.Header["Authentication"]
-			if len(auth) != 1 {
-				fmt.Printf("Auth token invalid: %s\n", auth)
+			// Get the api key from request
+			apiKey := r.Header.Get("Authentication")
+			if apiKey == "" {
+				service.Log("Authentication token invalid: %s", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-
-			// Get the api key
-			apiKey := auth[0]
 
 			// Extract config
 			cfg := r.Context().Value(config.ContextConfig).(config.BaseConfig)
@@ -78,18 +75,18 @@ func AuthenticateAdmin() Adapter {
 			// Find the client associated to the given api key
 			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err == mongo.ErrNoDocuments {
-				fmt.Printf("No client with api key %s\n", apiKey)
+				service.Log("No client with api key %s", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 			if err != nil {
-				fmt.Printf("Error while searching client with api %s: %s\n",
+				service.Log("Error while searching client with api %s: %s",
 					apiKey, err.Error())
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 			if client.Code != config.ClientAdminCode {
-				fmt.Printf("Client with api key %s is not admin\n", apiKey)
+				service.Log("Client with api key %s is not admin", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
@@ -111,7 +108,7 @@ func AuthenticateAdminOrFirstUser() Adapter {
 			// Check if no client is defined at all
 			_, err := db.SelectAnyClient(cfg.DB)
 			if err != nil && err != mongo.ErrNoDocuments {
-				fmt.Printf("Error while checking any client existence: %s\n", err.Error())
+				service.Log("Error while checking any client existence: %s", err.Error())
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
@@ -121,27 +118,24 @@ func AuthenticateAdminOrFirstUser() Adapter {
 				return
 			}
 
-			// Get the authentication header from request
-			auth := r.Header["Authentication"]
-			if len(auth) != 1 {
-				fmt.Printf("Auth token invalid: %s\n", auth)
+			// Get the api key from request
+			apiKey := r.Header.Get("Authentication")
+			if apiKey == "" {
+				service.Log("Authentication token invalid: %s", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
-			// Get the api key
-			apiKey := auth[0]
-
 			// Find the client associated to the given api key
 			client, err := db.SelectClientByApiKey(cfg.DB, apiKey)
 			if err != nil && err != mongo.ErrNoDocuments {
-				fmt.Printf("Error while searching client with api %s: %s\n",
+				service.Log("Error while searching client with api %s: %s",
 					apiKey, err.Error())
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 			if client.Code != config.ClientAdminCode {
-				fmt.Printf("Client with api key %s is not admin\n", apiKey)
+				service.Log("Client with api key %s is not admin", apiKey)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}

@@ -17,16 +17,16 @@ func main() {
 		os.Exit(1)
 	}
 	configPath := os.Args[1]
-	service.Log("Loading configuration from %s\n", configPath)
+	service.Log("Loading configuration from %s", configPath)
 
 	// Setup machine config
 	var cfg config.BaseConfig
 	err := config.LoadConfig(configPath, &cfg)
 	if err != nil {
-		service.Log("Error while reading config file: %s\n", err.Error())
+		service.Log("Error while reading config file: %s", err.Error())
 		os.Exit(2)
 	}
-	service.Log("Configuration loaded: %+v\n", cfg)
+	service.Log("Configuration loaded: %+v", cfg)
 
 	// Create the mux
 	mux := http.NewServeMux()
@@ -41,7 +41,7 @@ func main() {
 	}
 	ln, err := net.Listen("tcp", ":"+cfg.Server.Port)
 	if err != nil {
-		service.Log("Error while assigning server port: %s\n", err.Error())
+		service.Log("Error while assigning server port: %s", err.Error())
 		os.Exit(3)
 	}
 
@@ -49,7 +49,7 @@ func main() {
 	service.Log("Ready to listen incoming requests")
 	server.Serve(ln)
 	if err != nil {
-		service.Log("Error while starting up server: %s\n", err.Error())
+		service.Log("Error while starting up server: %s", err.Error())
 		os.Exit(4)
 	}
 }

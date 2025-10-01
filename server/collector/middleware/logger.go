@@ -9,7 +9,7 @@ func Logger() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Log the request
-			service.Log("%s request at %s\n",
+			service.Log("%s request at %s",
 				r.Method,
 				r.URL,
 			)
