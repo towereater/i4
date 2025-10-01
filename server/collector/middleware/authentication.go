@@ -13,9 +13,6 @@ import (
 func AuthenticateAdminOrClient() Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Logging
-			service.Log("Headers: %+v", r.Header)
-
 			// Get the api key from request
 			apiKey := r.Header.Get("Authentication")
 			if apiKey == "" {
