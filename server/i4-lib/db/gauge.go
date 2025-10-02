@@ -158,6 +158,14 @@ func SumGauge(cfg config.DBConfig, client string, dataFilter model.DataGauge, ts
 			"count": bson.M{"$sum": 1},
 			"sum":   bson.M{"$sum": "$value"},
 		}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":     0,
+			"machine": "$_id.machine",
+			"key":     "$_id.key",
+			"value":   "$_id.value",
+			"count":   1,
+			"sum":     1,
+		}}},
 		bson.D{{Key: "$sort", Value: bson.D{
 			{Key: "machine", Value: 1},
 			{Key: "key", Value: 1},

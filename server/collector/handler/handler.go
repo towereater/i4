@@ -38,10 +38,27 @@ func SetupRoutes(cfg config.BaseConfig, mux *http.ServeMux) {
 		config.ContextHash),
 		mw.AdminOrClientAuthentication(ContentByHashHandler(), cfg))
 
-	// Data handler
-	mux.Handle(fmt.Sprintf("/clients/{%s}/data",
+	// Gauge data handler
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/gauge",
 		config.ContextClientCode),
-		mw.AdminOrClientAuthentication(DataHandler(), cfg))
+		mw.AdminOrClientAuthentication(GaugeHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/gauge/sum",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(GaugeSumHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/gauge/count",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(GaugeCountHandler(), cfg))
+
+	// Interval data handler
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/interval",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(IntervalHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/interval/sum",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(IntervalSumHandler(), cfg))
+	mux.Handle(fmt.Sprintf("/clients/{%s}/data/interval/count",
+		config.ContextClientCode),
+		mw.AdminOrClientAuthentication(IntervalCountHandler(), cfg))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
